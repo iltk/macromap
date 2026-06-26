@@ -1,0 +1,15 @@
+# Frontend
+web/node_modules/
+web/dist/
+
+# Backend
+api/target/
+
+# Env / secrets
+.env
+*.local
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
