@@ -1,4 +1,4 @@
-package entity;
+package ca.macromap.api.entity;
 
 
 import jakarta.persistence.*;
