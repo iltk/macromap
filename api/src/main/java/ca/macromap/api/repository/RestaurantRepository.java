@@ -1,6 +1,6 @@
-package repository;
+package ca.macromap.api.repository;
 
-import entity.Restaurant;
+import ca.macromap.api.entity.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
