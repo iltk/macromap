@@ -10,11 +10,13 @@ import { SearchBar } from "../components/search/SearchBar";
 import { Toast } from "../components/ui/Toast";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationDetails } from "../hooks/useLocationDetails";
+import { useNow } from "../hooks/useNow";
 import { useToast } from "../hooks/useToast";
 import { useVenueData } from "../hooks/useVenueData";
 import type { Coordinates, MenuItemHit, RestaurantHit, Venue, VenueFilter } from "../types/venues";
 import { applyFilter } from "../utils/filter";
 import { TORONTO, distanceMeters, nearest } from "../utils/geo";
+import { getOpenStatus } from "../utils/openingHours";
 
 const COVERAGE_RADIUS_M = 60_000;
 const PANEL_WIDTH = 408;
@@ -39,6 +41,8 @@ export function MapPage() {
     return chain ? { kind: "chain", slug: chain } : { kind: "all" };
   });
   const [mapReady, setMapReady] = useState(false);
+  const [openNow, setOpenNow] = useState(false);
+  const now = useNow();
   const toast = useToast();
   const { details, isLoading, error, retry } = useLocationDetails(selectedId);
 
@@ -55,7 +59,15 @@ export function MapPage() {
     document.title = "MacroMap · Restaurant macros near you";
   }, []);
 
-  const visibleVenues = useMemo(() => applyFilter(venues, filter), [venues, filter]);
+  const visibleVenues = useMemo(() => {
+    const filtered = applyFilter(venues, filter);
+    // "Open now" only keeps places whose posted hours say they're open (unknown hours are hidden).
+    return openNow ? filtered.filter((v) => getOpenStatus(v.openingHours, now)?.open === true) : filtered;
+  }, [venues, filter, openNow, now]);
+  const unknownHoursCount = useMemo(
+    () => (openNow ? applyFilter(venues, filter).filter((v) => !getOpenStatus(v.openingHours, now)).length : 0),
+    [venues, filter, openNow, now],
+  );
   const selectedVenue: Venue | null = useMemo(() => {
     if (!selectedId) return null;
     const pin = venues.find((v) => v.locationId === selectedId);
@@ -220,7 +232,13 @@ export function MapPage() {
             <SearchBar onSelectRestaurant={handleSelectRestaurant} onSelectItem={handleSelectItem} />
           </div>
           <div className="pointer-events-auto min-w-0 md:pt-2">
-            <FilterChips venues={venues} filter={filter} onChange={setFilter} />
+            <FilterChips
+              venues={venues}
+              filter={filter}
+              onChange={setFilter}
+              openNow={openNow}
+              onOpenNowChange={setOpenNow}
+            />
           </div>
         </div>
 
@@ -244,6 +262,12 @@ export function MapPage() {
           {venuesLoading && <StatusChip>Loading restaurants…</StatusChip>}
           {!HAS_MAP_KEY && <StatusChip tone="error">Missing VITE_MAPTILER_KEY in web/.env.local</StatusChip>}
           {outsideCoverage && !panelOpen && <StatusChip>MacroMap covers Toronto for now</StatusChip>}
+          {openNow && !panelOpen && (
+            <StatusChip>
+              {visibleVenues.length} open now
+              {unknownHoursCount > 0 && ` · ${unknownHoursCount} hidden (hours unknown)`}
+            </StatusChip>
+          )}
         </div>
 
       </div>
