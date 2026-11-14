@@ -3,6 +3,7 @@ import type { Coordinates, LocationDetails } from "../../types/venues";
 import type { Goal } from "../../utils/goals";
 import { distanceMeters, formatDistance } from "../../utils/geo";
 import { getOpenStatus } from "../../utils/openingHours";
+import { toPlaceRef, toggleSaved, useSavedPlaces } from "../../stores/places";
 import { Icon, type IconName } from "../ui/icons";
 import { MenuTab } from "./MenuTab";
 import { OverviewTab } from "./OverviewTab";
@@ -95,6 +96,7 @@ function PanelContent({
       )
     : null;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${details.latitude},${details.longitude}`;
+  const isSaved = useSavedPlaces().some((p) => p.locationId === details.locationId);
 
   return (
     <>
@@ -133,6 +135,12 @@ function PanelContent({
       {/* action buttons */}
       <div className="flex justify-around border-b border-gray-200 px-4 pb-4">
         <Action icon="directions" label="Directions" href={directionsUrl} primary />
+        <Action
+          icon={isSaved ? "bookmark" : "bookmarkBorder"}
+          label={isSaved ? "Saved" : "Save"}
+          onClick={() => toggleSaved(toPlaceRef(details))}
+          pressed={isSaved}
+        />
         {details.website && <Action icon="web" label="Website" href={details.website} />}
         {details.phone && <Action icon="phone" label="Call" href={`tel:${details.phone}`} />}
         <Action icon="share" label="Share" onClick={onShare} />
@@ -183,12 +191,14 @@ function Action({
   href,
   onClick,
   primary,
+  pressed,
 }: {
   icon: IconName;
   label: string;
   href?: string;
   onClick?: () => void;
   primary?: boolean;
+  pressed?: boolean;
 }) {
   const circle = (
     <span
@@ -206,7 +216,7 @@ function Action({
       {label}
     </a>
   ) : (
-    <button type="button" onClick={onClick} className={cls}>
+    <button type="button" onClick={onClick} className={cls} aria-pressed={pressed}>
       {circle}
       {label}
     </button>

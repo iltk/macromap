@@ -4,15 +4,25 @@ import { CATEGORY_COLORS } from "../../constants/categories";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import type { MenuItemHit, RestaurantHit, SearchResponse } from "../../types/venues";
 import { Icon } from "../ui/icons";
+import { clearRecents, useRecentPlaces, useSavedPlaces, type PlaceRef } from "../../stores/places";
 
 interface SearchBarProps {
   onSelectRestaurant: (hit: RestaurantHit) => void;
   onSelectItem: (hit: MenuItemHit) => void;
+  onSelectPlace: (place: PlaceRef) => void;
 }
 
 type Option =
   | { kind: "restaurant"; hit: RestaurantHit }
-  | { kind: "item"; hit: MenuItemHit };
+  | { kind: "item"; hit: MenuItemHit }
+  | { kind: "place"; place: PlaceRef; group: "saved" | "recent" };
+
+const optionKey = (o: Option) =>
+  o.kind === "restaurant"
+    ? `r-${o.hit.restaurantId}`
+    : o.kind === "item"
+      ? `i-${o.hit.id}`
+      : `${o.group}-${o.place.locationId}`;
 
 interface Results {
   query: string;
@@ -20,7 +30,9 @@ interface Results {
   error: boolean;
 }
 
-export function SearchBar({ onSelectRestaurant, onSelectItem }: SearchBarProps) {
+export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: SearchBarProps) {
+  const saved = useSavedPlaces();
+  const recents = useRecentPlaces();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -51,22 +63,34 @@ export function SearchBar({ onSelectRestaurant, onSelectItem }: SearchBarProps) 
 
   const current = results && results.query === debounced && debounced ? results : null;
   const loading = Boolean(query.trim()) && !current;
-  const options: Option[] = current?.data
+  const browsing = !query.trim();
+  const savedIds = new Set(saved.map((p) => p.locationId));
+  const options: Option[] = browsing
     ? [
-        ...current.data.restaurants.map((hit) => ({ kind: "restaurant" as const, hit })),
-        ...current.data.items.map((hit) => ({ kind: "item" as const, hit })),
+        ...saved.map((place) => ({ kind: "place" as const, place, group: "saved" as const })),
+        ...recents
+          .filter((p) => !savedIds.has(p.locationId))
+          .slice(0, 5)
+          .map((place) => ({ kind: "place" as const, place, group: "recent" as const })),
       ]
-    : [];
-  const showDropdown = open && Boolean(query.trim());
+    : current?.data
+      ? [
+          ...current.data.restaurants.map((hit) => ({ kind: "restaurant" as const, hit })),
+          ...current.data.items.map((hit) => ({ kind: "item" as const, hit })),
+        ]
+      : [];
+  const showDropdown = open && (!browsing || options.length > 0);
 
   const choose = (opt: Option) => {
     setOpen(false);
     if (opt.kind === "restaurant") {
       setQuery(opt.hit.name);
       onSelectRestaurant(opt.hit);
-    } else {
+    } else if (opt.kind === "item") {
       setQuery(opt.hit.name);
       onSelectItem(opt.hit);
+    } else {
+      onSelectPlace(opt.place);
     }
     (document.activeElement as HTMLElement | null)?.blur();
   };
@@ -134,16 +158,31 @@ export function SearchBar({ onSelectRestaurant, onSelectItem }: SearchBarProps) 
           role="listbox"
           className="absolute inset-x-0 top-12 z-10 max-h-[60vh] overflow-y-auto rounded-b-3xl border-t border-gray-200 bg-white py-2 shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
         >
-          {loading && <li className="px-5 py-3 text-sm text-gray-500">Searching…</li>}
+          {!browsing && loading && <li className="px-5 py-3 text-sm text-gray-500">Searching…</li>}
           {current?.error && (
             <li className="px-5 py-3 text-sm text-red-600">Search is unavailable right now.</li>
           )}
-          {current?.data && options.length === 0 && (
+          {browsing && (
+            <li className="flex items-center justify-between px-5 pt-1 pb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+              {saved.length > 0 ? "Saved & recent" : "Recent"}
+              {recents.length > 0 && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={clearRecents}
+                  className="font-medium tracking-normal text-[#1a73e8] normal-case hover:underline"
+                >
+                  Clear history
+                </button>
+              )}
+            </li>
+          )}
+          {!browsing && current?.data && options.length === 0 && (
             <li className="px-5 py-3 text-sm text-gray-500">No results for “{current.query}”.</li>
           )}
           {options.map((opt, i) => (
             <li
-              key={`${opt.kind}-${opt.kind === "restaurant" ? opt.hit.restaurantId : opt.hit.id}`}
+              key={optionKey(opt)}
               role="option"
               aria-selected={i === active}
               onMouseEnter={() => setActive(i)}
@@ -153,7 +192,17 @@ export function SearchBar({ onSelectRestaurant, onSelectItem }: SearchBarProps) 
                 i === active ? "bg-gray-100" : ""
               }`}
             >
-              {opt.kind === "restaurant" ? (
+              {opt.kind === "place" ? (
+                <>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                    <Icon name={opt.group === "saved" ? "bookmark" : "history"} className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-gray-900">{opt.place.name}</span>
+                    <span className="block truncate text-xs text-gray-500">{opt.place.address}</span>
+                  </span>
+                </>
+              ) : opt.kind === "restaurant" ? (
                 <>
                   <span
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white"

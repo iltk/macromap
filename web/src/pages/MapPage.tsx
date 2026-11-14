@@ -15,6 +15,7 @@ import { Toast } from "../components/ui/Toast";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationDetails } from "../hooks/useLocationDetails";
 import { useNow } from "../hooks/useNow";
+import { addRecent, toPlaceRef, type PlaceRef } from "../stores/places";
 import { useToast } from "../hooks/useToast";
 import { useVenueData } from "../hooks/useVenueData";
 import type { Coordinates, MenuItemHit, RestaurantHit, Venue, VenueFilter } from "../types/venues";
@@ -123,6 +124,11 @@ export function MapPage() {
     [venues, flyTo],
   );
 
+  // Remember every place that was opened (most recent first).
+  useEffect(() => {
+    if (details) addRecent(toPlaceRef(details));
+  }, [details]);
+
   // Deep link: fly once we know where the place is.
   useEffect(() => {
     if (mapReady && details && pendingFly.current === details.locationId) {
@@ -198,6 +204,16 @@ export function MapPage() {
     if (target) selectLocation(target.locationId);
   };
 
+  const handleSelectPlace = (place: PlaceRef) => {
+    if (venues.some((v) => v.locationId === place.locationId)) selectLocation(place.locationId);
+    else {
+      // not among the current pins (e.g. filtered out): open it and fly from the stored coords
+      setSelectedId(place.locationId);
+      setTab("overview");
+      flyTo(place.latitude, place.longitude);
+    }
+  };
+
   const handleSelectItem = (hit: MenuItemHit) => {
     const target = nearest(venues.filter((v) => v.slug === hit.restaurantSlug), searchOrigin());
     if (target) selectLocation(target.locationId, { tab: "menu", focusItemId: hit.id });
@@ -250,7 +266,11 @@ export function MapPage() {
         {/* search: floats over the map (and over the panel on desktop, like Google Maps) */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-2 p-3 md:flex-row md:items-start md:gap-4 md:px-4">
           <div className="pointer-events-auto md:w-[376px] md:shrink-0">
-            <SearchBar onSelectRestaurant={handleSelectRestaurant} onSelectItem={handleSelectItem} />
+            <SearchBar
+              onSelectRestaurant={handleSelectRestaurant}
+              onSelectItem={handleSelectItem}
+              onSelectPlace={handleSelectPlace}
+            />
           </div>
           <div className="pointer-events-auto min-w-0 md:pt-2">
             <FilterChips
