@@ -31,7 +31,13 @@ interface TrackerState {
   plan: PlanEntry[];
   targets: DailyTarget | null;
   profile: BodyProfile | null;
+  /** Items starred for quick add. */
+  favorites: TrayItem[];
+  /** Foods the viewer entered by hand (not on any menu). */
+  customFoods: TrayItem[];
 }
+
+const EMPTY: TrackerState = { days: {}, plan: [], targets: null, profile: null, favorites: [], customFoods: [] };
 
 const KEY = "macromap.tracker.v1";
 
@@ -46,7 +52,7 @@ const newId = () =>
 
 /** First run: carry over the old meal sheet (as today's entries) and its daily target. */
 function initialState(): TrackerState {
-  const fresh: TrackerState = { days: {}, plan: [], targets: null, profile: null };
+  const fresh: TrackerState = { ...EMPTY };
   const old = readJson<{ meal?: { item: TrayItem; qty: number }[]; target?: DailyTarget | null } | null>(
     "macromap.tray.v2",
     null,
@@ -70,8 +76,9 @@ const hadTracker = (() => {
     return true;
   }
 })();
-const store = createPersistentStore<TrackerState>(KEY, hadTracker ? { days: {}, plan: [], targets: null, profile: null } : initialState());
-if (!hadTracker) store.set((s) => s); // persist the migrated state once
+const store = createPersistentStore<TrackerState>(KEY, hadTracker ? { ...EMPTY } : initialState());
+// fill fields added after a state was first saved, and persist a migrated state once
+store.set((s) => ({ ...EMPTY, ...s }));
 
 export const useTracker = () => useSyncExternalStore(store.subscribe, store.get, store.get);
 
@@ -155,3 +162,38 @@ export function useToday() {
   const left = targets ? { calories: targets.calories - totals.calories, protein: targets.protein - totals.protein } : null;
   return { totals, targets, left };
 }
+
+/* ---------- favourites & custom foods ---------- */
+
+export function toggleFavorite(item: TrayItem) {
+  store.set((s) => ({
+    ...s,
+    favorites: s.favorites.some((f) => f.id === item.id) ? s.favorites.filter((f) => f.id !== item.id) : [item, ...s.favorites],
+  }));
+}
+
+export const CUSTOM_SLUG = "custom";
+
+/** Creates a hand-entered food (optionally kept in "My foods") and returns it as a loggable item. */
+export function createCustomFood(
+  food: { name: string; calories: number; protein: number; carbs: number; fat: number; servingSize?: string },
+  save: boolean,
+): TrayItem {
+  const item: TrayItem = {
+    id: `custom:${newId()}`,
+    name: food.name.trim(),
+    restaurantName: "My food",
+    restaurantSlug: CUSTOM_SLUG,
+    servingSize: food.servingSize?.trim() || null,
+    imageUrl: null,
+    calories: Math.round(food.calories),
+    protein: food.protein,
+    carbs: food.carbs,
+    fat: food.fat,
+  };
+  if (save) store.set((s) => ({ ...s, customFoods: [item, ...s.customFoods] }));
+  return item;
+}
+
+export const removeCustomFood = (id: string) =>
+  store.set((s) => ({ ...s, customFoods: s.customFoods.filter((f) => f.id !== id), favorites: s.favorites.filter((f) => f.id !== id) }));

@@ -1,0 +1,89 @@
+import { useMemo, useState } from "react";
+import { useTracker } from "../../stores/tracker";
+import { dayKey } from "../../utils/dates";
+import { daySeries, downloadText, logToCsv } from "../../utils/history";
+import { DayBarChart } from "../charts/DayBarChart";
+import { ui } from "../ui/styles";
+
+/** Last 7 or 30 days: averages, calorie and protein charts, a day table and CSV export. */
+export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void }) {
+  const { days, targets } = useTracker();
+  const [range, setRange] = useState<7 | 30>(7);
+  const points = useMemo(() => daySeries(days, dayKey(), range), [days, range]);
+  const logged = points.filter((p) => p.logged);
+  const avg = (f: (p: (typeof points)[number]) => number) => (logged.length ? logged.reduce((s, p) => s + f(p), 0) / logged.length : 0);
+  const onTarget = targets ? logged.filter((p) => Math.abs(p.calories - targets.calories) <= targets.calories * 0.1).length : null;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="Range">
+          {([7, 30] as const).map((n) => (
+            <button key={n} type="button" role="radio" aria-checked={range === n} onClick={() => setRange(n)} className={`rounded px-3 py-1 text-sm ${range === n ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}>
+              Last {n} days
+            </button>
+          ))}
+        </div>
+        <button type="button" disabled={Object.keys(days).length === 0} onClick={() => downloadText(`macromap-log-${dayKey()}.csv`, logToCsv(days))} className={ui.btn}>
+          Export CSV
+        </button>
+      </div>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          ["Avg calories", logged.length ? Math.round(avg((p) => p.calories)).toLocaleString() : "–"],
+          ["Avg protein", logged.length ? `${Math.round(avg((p) => p.protein))} g` : "–"],
+          ["Days logged", `${logged.length} of ${range}`],
+          ["Near calorie target", onTarget === null ? "Set targets" : `${onTarget} of ${logged.length}`],
+        ].map(([label, v]) => (
+          <div key={label} className="rounded-xl border border-gray-200 bg-white p-4">
+            <p className="text-xs text-gray-500">{label}</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">{v}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-6 rounded-xl border border-gray-200 bg-white p-4">
+        <DayBarChart title="Calories" points={points} value={(p) => p.calories} unit="cal" target={targets?.calories ?? null} color="var(--color-gray-700)" />
+        <DayBarChart title="Protein (g)" points={points} value={(p) => p.protein} unit="g protein" target={targets?.protein ?? null} color="var(--color-protein)" />
+        {targets && <p className="text-xs text-gray-500">“Near calorie target” counts logged days within 10% of {targets.calories} cal.</p>}
+      </section>
+
+      <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <table className="w-full min-w-[480px] text-sm">
+          <thead className="border-b border-gray-200 text-gray-500">
+            <tr>
+              <th className="px-4 py-2 text-left font-medium">Day</th>
+              <th className="px-4 py-2 text-right font-medium">Calories</th>
+              <th className="px-4 py-2 text-right font-medium">Protein</th>
+              <th className="px-4 py-2 text-right font-medium">Carbs</th>
+              <th className="px-4 py-2 text-right font-medium">Fat</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {[...points].reverse().map((p) => (
+              <tr key={p.key} className="hover:bg-row-hover">
+                <td className="px-4 py-2">
+                  <button type="button" onClick={() => onOpenDay(p.key)} className={ui.link}>
+                    {p.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                  </button>
+                </td>
+                {p.logged ? (
+                  <>
+                    <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.calories)}</td>
+                    <td className="px-4 py-2 text-right text-accent-ink tabular-nums">{Math.round(p.protein)} g</td>
+                    <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.carbs)} g</td>
+                    <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.fat)} g</td>
+                  </>
+                ) : (
+                  <td colSpan={4} className="px-4 py-2 text-right text-gray-400">Nothing logged</td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+      <p className="text-xs text-gray-500">Your log is saved in this browser only. Export it to keep a copy.</p>
+    </div>
+  );
+}

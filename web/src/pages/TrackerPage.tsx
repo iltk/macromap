@@ -5,6 +5,8 @@ import { DayLog } from "../components/tracker/DayLog";
 import { DaySummary } from "../components/tracker/DaySummary";
 import { PlanCard } from "../components/tracker/PlanCard";
 import { Suggestions } from "../components/tracker/Suggestions";
+import { HistoryView } from "../components/tracker/HistoryView";
+import { QuickAdd } from "../components/tracker/QuickAdd";
 import { Icon } from "../components/ui/icons";
 import { ui } from "../components/ui/styles";
 import { totalsOf, useTracker } from "../stores/tracker";
@@ -24,15 +26,25 @@ export function TrackerPage() {
     document.title = "Tracker · MacroMap";
   }, []);
 
+  const history = params.get("view") === "history";
   const go = (key: string) => setParams(key === today ? {} : { date: key }, { replace: true });
+  const showHistory = (on: boolean) => setParams(on ? { view: "history" } : {}, { replace: true });
 
   return (
     <div className="min-h-dvh bg-page">
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-4 pt-6 pb-16 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             <h1 className="mr-3 text-2xl font-bold text-gray-900">Tracker</h1>
+            <div className="mr-3 inline-flex rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="View">
+              {([false, true] as const).map((h) => (
+                <button key={String(h)} type="button" role="radio" aria-checked={history === h} onClick={() => showHistory(h)} className={`rounded px-3 py-1 text-sm ${history === h ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}>
+                  {h ? "History" : "Day"}
+                </button>
+              ))}
+            </div>
+            {!history && (<>
             <button type="button" onClick={() => go(shiftDay(date, -1))} aria-label="Previous day" className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100">
               <Icon name="arrowBack" className="h-4 w-4" />
             </button>
@@ -51,6 +63,7 @@ export function TrackerPage() {
                 Back to today
               </button>
             )}
+            </>)}
           </div>
           <button type="button" onClick={() => openSheet("targets")} className={ui.btn}>
             <Icon name="tune" className="h-4 w-4" />
@@ -58,6 +71,9 @@ export function TrackerPage() {
           </button>
         </div>
 
+        {history ? (
+          <div className="mt-5"><HistoryView onOpenDay={go} /></div>
+        ) : (
         <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0 space-y-5">
             <DaySummary totals={totals} targets={targets} isToday={date === today} />
@@ -65,10 +81,12 @@ export function TrackerPage() {
             <DayLog date={date} entries={entries} />
           </div>
           <div className="min-w-0 space-y-5 lg:sticky lg:top-20 lg:self-start">
+            <QuickAdd date={date} />
             <PlanCard />
             <p className="px-1 text-xs text-gray-500">Your log is saved in this browser only.</p>
           </div>
         </div>
+        )}
       </main>
     </div>
   );
