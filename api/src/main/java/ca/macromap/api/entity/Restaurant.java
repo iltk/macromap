@@ -37,6 +37,12 @@ public class Restaurant {
     @Column(name = "logo_url")
     private String logoUrl;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "brand_color")
+    private String brandColor;
+
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuItem> menuItems = new ArrayList<>();
 

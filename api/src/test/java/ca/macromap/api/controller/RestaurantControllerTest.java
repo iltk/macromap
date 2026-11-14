@@ -2,7 +2,9 @@ package ca.macromap.api.controller;
 
 import ca.macromap.api.dto.LocationDetails;
 import ca.macromap.api.dto.MenuItemDto;
+import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
+import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse;
 import ca.macromap.api.exception.NotFoundException;
 import ca.macromap.api.service.RestaurantService;
@@ -51,7 +53,7 @@ class RestaurantControllerTest {
         MenuItemDto item = new MenuItemDto(UUID.randomUUID(), "Teen Burger", "Burger", "250 g", 500,
                 new BigDecimal("27"), new BigDecimal("36"), new BigDecimal("30"), "test");
         when(service.getLocationDetails(LOC_ID)).thenReturn(new LocationDetails(
-                LOC_ID, 1L, "aw", "A&W", "restaurant", "https://web.aw.ca/", "85 Front Street East, Toronto, ON",
+                LOC_ID, 1L, "aw", "A&W", "restaurant", "#e36b0a", "https://web.aw.ca/", "85 Front Street East, Toronto, ON",
                 "Toronto", null, "24/7", new BigDecimal("43.648832"), new BigDecimal("-79.372345"), List.of(item)));
 
         mvc.perform(get("/api/locations/{id}", LOC_ID))
@@ -60,6 +62,42 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.openingHours").value("24/7"))
                 .andExpect(jsonPath("$.menu[0].name").value("Teen Burger"))
                 .andExpect(jsonPath("$.menu[0].calories").value(500));
+    }
+
+    @Test
+    void restaurantDirectoryListsSummaries() throws Exception {
+        when(service.getAllRestaurants()).thenReturn(List.of(
+                new RestaurantSummary(1L, "aw", "A&W", "restaurant", "Burgers", "#e36b0a", 68L, 53L)));
+
+        mvc.perform(get("/api/restaurants"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].slug").value("aw"))
+                .andExpect(jsonPath("$[0].locationCount").value(68))
+                .andExpect(jsonPath("$[0].menuItemCount").value(53));
+    }
+
+    @Test
+    void restaurantMenuBySlug() throws Exception {
+        when(service.getRestaurantMenu("aw")).thenReturn(new RestaurantMenu(
+                1L, "aw", "A&W", "restaurant", "Burgers", "#e36b0a", "https://web.aw.ca/", 68, List.of()));
+
+        mvc.perform(get("/api/restaurants/aw"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("A&W"))
+                .andExpect(jsonPath("$.locationCount").value(68));
+    }
+
+    @Test
+    void pinsPathIsNotTreatedAsSlug() throws Exception {
+        when(service.getAllPins()).thenReturn(List.of());
+        mvc.perform(get("/api/restaurants/pins")).andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void unknownRestaurantIs404() throws Exception {
+        when(service.getRestaurantMenu("nope")).thenThrow(new NotFoundException("nope"));
+        mvc.perform(get("/api/restaurants/nope")).andExpect(status().isNotFound());
     }
 
     @Test

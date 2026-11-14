@@ -1,5 +1,6 @@
 package ca.macromap.api.repository;
 
+import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse.RestaurantHit;
 import ca.macromap.api.entity.Restaurant;
 import org.springframework.data.domain.Limit;
@@ -8,9 +9,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+
+    Optional<Restaurant> findBySlug(String slug);
+
+    @Query("""
+        SELECT new ca.macromap.api.dto.RestaurantSummary(
+            r.id, r.slug, r.name, r.category, r.description, r.brandColor,
+            (SELECT COUNT(rl) FROM RestaurantLocation rl WHERE rl.restaurant = r),
+            (SELECT COUNT(m) FROM MenuItem m WHERE m.restaurant = r))
+        FROM Restaurant r
+        ORDER BY LOWER(r.name)
+        """)
+    List<RestaurantSummary> findAllSummaries();
 
     /** {@code pattern} is a lower-cased LIKE pattern, e.g. {@code %tim%}. */
     @Query("""

@@ -1,7 +1,9 @@
 package ca.macromap.api.controller;
 
 import ca.macromap.api.dto.LocationDetails;
+import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
+import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse;
 import ca.macromap.api.service.RestaurantService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +28,16 @@ public class RestaurantController {
     @GetMapping("/restaurants/pins")
     public List<RestaurantPin> getAllPins() {
         return restaurantService.getAllPins();
+    }
+
+    @GetMapping("/restaurants")
+    public List<RestaurantSummary> getAllRestaurants() {
+        return restaurantService.getAllRestaurants();
+    }
+
+    @GetMapping("/restaurants/{slug}")
+    public RestaurantMenu getRestaurantMenu(@PathVariable String slug) {
+        return restaurantService.getRestaurantMenu(slug);
     }
 
     @GetMapping("/locations/{id}")
