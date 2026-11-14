@@ -15,6 +15,9 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
 
     List<MenuItem> findByRestaurantIdOrderByMenuCategoryAscNameAsc(Long restaurantId);
 
+    @Query("SELECT m FROM MenuItem m JOIN FETCH m.restaurant ORDER BY m.restaurant.name, m.menuCategory, m.name")
+    List<MenuItem> findAllWithRestaurant();
+
     /** {@code pattern} is a lower-cased LIKE pattern, e.g. {@code %teen%}. */
     @Query("""
         SELECT new ca.macromap.api.dto.SearchResponse$MenuItemHit(

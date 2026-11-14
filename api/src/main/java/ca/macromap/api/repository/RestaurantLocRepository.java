@@ -25,4 +25,7 @@ public interface RestaurantLocRepository extends JpaRepository<RestaurantLocatio
     Optional<RestaurantLocation> findWithRestaurantById(UUID id);
 
     long countByRestaurantId(Long restaurantId);
+
+    @Query("SELECT rl FROM RestaurantLocation rl JOIN FETCH rl.restaurant")
+    List<RestaurantLocation> findAllWithRestaurant();
 }
