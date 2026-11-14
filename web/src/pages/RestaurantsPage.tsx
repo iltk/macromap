@@ -219,7 +219,7 @@ export function RestaurantsPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Prefer to look around?{" "}
-          <Link to="/" className="font-medium text-[#1a73e8] hover:underline">
+          <Link to={goalActive ? `/?goal=${goal.id}` : "/"} className="font-medium text-[#1a73e8] hover:underline">
             Open the map
           </Link>
         </p>

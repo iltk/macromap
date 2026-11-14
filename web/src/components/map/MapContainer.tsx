@@ -33,14 +33,22 @@ interface MapContainerProps {
   venues: Venue[];
   selectedVenue: Venue | null;
   panelOpen: boolean;
+  /** slug -> number of menu items that fit the active goal; null when no goal is set. */
+  fitsBySlug: Map<string, number> | null;
   onSelectVenue: (locationId: string | null) => void;
   onLocateMe: () => void;
   onReady: () => void;
 }
 
-type VenueProps = Pick<Venue, "locationId" | "name" | "category" | "slug">;
+type VenueProps = Pick<Venue, "locationId" | "name" | "category" | "slug"> & {
+  label: string;
+  dim: boolean;
+};
 
-function toFeatureCollection(venues: Venue[]): FeatureCollection<Point, VenueProps> {
+function toFeatureCollection(
+  venues: Venue[],
+  fitsBySlug: Map<string, number> | null,
+): FeatureCollection<Point, VenueProps> {
   return {
     type: "FeatureCollection",
     features: venues.map((v) => ({
@@ -51,9 +59,16 @@ function toFeatureCollection(venues: Venue[]): FeatureCollection<Point, VenuePro
         name: v.name,
         category: v.category,
         slug: v.slug,
+        ...pinLabel(v, fitsBySlug),
       },
     })),
   };
+}
+
+function pinLabel(v: Venue, fitsBySlug: Map<string, number> | null) {
+  if (!fitsBySlug) return { label: v.name, dim: false };
+  const fits = fitsBySlug.get(v.slug) ?? 0;
+  return { label: fits > 0 ? `${v.name} · ${fits} fit` : v.name, dim: fits === 0 };
 }
 
 export function MapContainer({
@@ -62,6 +77,7 @@ export function MapContainer({
   venues,
   selectedVenue,
   panelOpen,
+  fitsBySlug,
   onSelectVenue,
   onLocateMe,
   onReady,
@@ -69,11 +85,11 @@ export function MapContainer({
   const [styleId, setStyleId] = useState<MapStyleId>("streets");
   const [cursor, setCursor] = useState<string>("");
 
-  const venueData = useMemo(() => toFeatureCollection(venues), [venues]);
+  const venueData = useMemo(() => toFeatureCollection(venues, fitsBySlug), [venues, fitsBySlug]);
   const selectedId = selectedVenue?.locationId ?? null;
   const selectedData = useMemo(
-    () => toFeatureCollection(selectedVenue ? [selectedVenue] : []),
-    [selectedVenue],
+    () => toFeatureCollection(selectedVenue ? [selectedVenue] : [], fitsBySlug),
+    [selectedVenue, fitsBySlug],
   );
   // slug -> brand, read lazily by the pin image handler (venues load after the map mounts)
   const brands = useRef(new globalThis.Map<string, PinBrand>());

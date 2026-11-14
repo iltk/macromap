@@ -1,5 +1,6 @@
 import { CATEGORY_COLORS, CATEGORY_ICON_PATHS, CATEGORY_LABELS } from "../../constants/categories";
 import type { Coordinates, LocationDetails } from "../../types/venues";
+import type { Goal } from "../../utils/goals";
 import { distanceMeters, formatDistance } from "../../utils/geo";
 import { getOpenStatus } from "../../utils/openingHours";
 import { Icon, type IconName } from "../ui/icons";
@@ -19,6 +20,7 @@ interface VenueDetailsPanelProps {
   tab: PanelTab;
   onTabChange: (tab: PanelTab) => void;
   focusItemId: string | null;
+  goal: Goal;
   onShare: () => void;
   onCopy: (text: string, message: string) => void;
 }
@@ -81,6 +83,7 @@ function PanelContent({
   tab,
   onTabChange,
   focusItemId,
+  goal,
   onShare,
   onCopy,
 }: VenueDetailsPanelProps & { details: LocationDetails }) {
@@ -167,6 +170,7 @@ function PanelContent({
           restaurantName={details.name}
           menu={details.menu}
           focusItemId={focusItemId}
+          goal={goal}
         />
       )}
     </>

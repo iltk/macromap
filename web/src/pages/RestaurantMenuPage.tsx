@@ -252,7 +252,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              to={`/?chain=${restaurant.slug}`}
+              to={`/?chain=${restaurant.slug}${activeGoal && activeGoal.id !== "any" ? `&goal=${activeGoal.id}` : ""}`}
               className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700"
             >
               <Icon name="place" className="h-4 w-4" />

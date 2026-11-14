@@ -53,8 +53,8 @@ const pinLayout = (selected: boolean): SymbolLayerSpecification["layout"] => ({
   "icon-ignore-placement": selected,
   // Labels only once zoomed in far enough to read the street grid (always for the selected pin).
   "text-field": selected
-    ? ["get", "name"]
-    : ["step", ["zoom"], "", 14, ["get", "name"]],
+    ? ["get", "label"]
+    : ["step", ["zoom"], "", 14, ["get", "label"]],
   "text-font": LABEL_FONT,
   "text-size": selected ? 14 : 12,
   "text-anchor": "left",
@@ -75,6 +75,9 @@ export function venuePinLayer(selectedId: string | null): SymbolLayerSpecificati
     ],
     layout: pinLayout(false),
     paint: {
+      // pins whose menu has nothing for the active goal fade into the background
+      "icon-opacity": ["case", ["get", "dim"], 0.3, 1],
+      "text-opacity": ["case", ["get", "dim"], 0.45, 1],
       "text-color": "#3c4043",
       "text-halo-color": "#ffffff",
       "text-halo-width": 1.5,

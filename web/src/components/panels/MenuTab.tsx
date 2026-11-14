@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, macroSplit, needsCheck, proteinDensity } from "../../utils/macros";
+import { fitsLimits, type Goal } from "../../utils/goals";
 import { Icon } from "../ui/icons";
 
 type SortKey = "menu" | "calories-asc" | "protein-desc" | "density-desc";
@@ -18,9 +19,12 @@ interface MenuTabProps {
   restaurantName: string;
   menu: MenuItem[];
   focusItemId: string | null;
+  goal: Goal;
 }
 
-export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProps) {
+export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuTabProps) {
+  const goalActive = goal.id !== "any";
+  const [onlyFits, setOnlyFits] = useState(true);
   const [sort, setSort] = useState<SortKey>("menu");
   const [text, setText] = useState("");
   const maxCalories = useMemo(
@@ -40,7 +44,8 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProp
     const filtered = menu.filter(
       (m) =>
         (calorieCap === null || (m.calories ?? 0) <= calorieCap) &&
-        (!needle || m.name.toLowerCase().includes(needle)),
+        (!needle || m.name.toLowerCase().includes(needle)) &&
+        (!goalActive || !onlyFits || fitsLimits(m, goal.limits)),
     );
     const by = (f: (m: MenuItem) => number | null, dir: 1 | -1) =>
       [...filtered].sort((a, b) => {
@@ -60,7 +65,11 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProp
       default:
         return filtered;
     }
-  }, [menu, sort, text, calorieCap]);
+  }, [menu, sort, text, calorieCap, goalActive, onlyFits, goal.limits]);
+  const fitCount = useMemo(
+    () => (goalActive ? menu.filter((m) => fitsLimits(m, goal.limits)).length : 0),
+    [menu, goalActive, goal.limits],
+  );
 
   if (menu.length === 0) {
     return (
@@ -133,9 +142,23 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProp
             aria-label="Maximum calories"
           />
         </label>
+        {goalActive && (
+          <label className="flex items-center gap-2 rounded-lg bg-[#e6f4ea] px-3 py-2 text-xs text-[#137333]">
+            <input
+              type="checkbox"
+              checked={onlyFits}
+              onChange={(e) => setOnlyFits(e.target.checked)}
+              className="accent-[#137333]"
+            />
+            <span>
+              Only the <span className="font-semibold">{fitCount}</span> items that fit{" "}
+              <span className="font-semibold">{goal.label.toLowerCase()}</span> ({goal.rule})
+            </span>
+          </label>
+        )}
         <div className="flex items-center justify-between gap-2">
           <MacroLegend />
-          <Link to={`/restaurants/${slug}`} className="shrink-0 text-xs font-medium text-[#1a73e8] hover:underline">
+          <Link to={`/restaurants/${slug}${goalActive ? `?goal=${goal.id}` : ""}`} className="shrink-0 text-xs font-medium text-[#1a73e8] hover:underline">
             Full menu →
           </Link>
         </div>
@@ -157,6 +180,7 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProp
                   key={item.id}
                   item={item}
                   focused={item.id === focusItemId}
+                  fits={goalActive && fitsLimits(item, goal.limits)}
                   rowRef={item.id === focusItemId ? focusRef : undefined}
                 />
               ))}
@@ -188,10 +212,12 @@ function MacroLegend() {
 function MenuItemRow({
   item,
   focused,
+  fits,
   rowRef,
 }: {
   item: MenuItem;
   focused: boolean;
+  fits: boolean;
   rowRef?: React.Ref<HTMLLIElement>;
 }) {
   const split = macroSplit(item);
@@ -205,6 +231,11 @@ function MenuItemRow({
         <div className="min-w-0">
           <p className="text-sm font-medium text-gray-900">
             {item.name}
+            {fits && (
+              <span className="ml-1.5 rounded bg-[#e6f4ea] px-1.5 py-0.5 align-middle text-[10px] font-semibold text-[#137333]">
+                FITS GOAL
+              </span>
+            )}
             {needsCheck(item) && (
               <span
                 title="These numbers don't add up in the source data. Treat with caution."

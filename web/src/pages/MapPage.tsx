@@ -6,6 +6,10 @@ import { MapContainer } from "../components/map/MapContainer";
 import { HAS_MAP_KEY } from "../components/map/mapStyles";
 import { VenueDetailsPanel, type PanelTab } from "../components/panels/VenueDetailsPanel";
 import { FilterChips } from "../components/search/FilterChips";
+import { GoalChip } from "../components/search/GoalChip";
+import { fetchRestaurants } from "../api/venues";
+import { useApi } from "../hooks/useApi";
+import { goalById, limitsToQuery } from "../utils/goals";
 import { SearchBar } from "../components/search/SearchBar";
 import { Toast } from "../components/ui/Toast";
 import { useGeolocation } from "../hooks/useGeolocation";
@@ -42,6 +46,20 @@ export function MapPage() {
   });
   const [mapReady, setMapReady] = useState(false);
   const [openNow, setOpenNow] = useState(false);
+  const [goal, setGoal] = useState(() => goalById(searchParams.get("goal")));
+  const goalQuery = limitsToQuery(goal.limits);
+  const goalStats = useApi(
+    goal.id === "any" ? null : `restaurants?${goalQuery}`,
+    (signal) => fetchRestaurants(goalQuery, signal),
+    { keepPrevious: true },
+  );
+  const fitsBySlug = useMemo(
+    () =>
+      goal.id === "any" || !goalStats.data
+        ? null
+        : new Map(goalStats.data.map((r) => [r.slug, r.matchingItems] as const)),
+    [goal.id, goalStats.data],
+  );
   const now = useNow();
   const toast = useToast();
   const { details, isLoading, error, retry } = useLocationDetails(selectedId);
@@ -151,11 +169,13 @@ export function MapPage() {
         else next.delete("place");
         if (filter.kind === "chain") next.set("chain", filter.slug);
         else next.delete("chain");
+        if (goal.id !== "any") next.set("goal", goal.id);
+        else next.delete("goal");
         return next;
       },
       { replace: true },
     );
-  }, [selectedId, filter, setSearchParams]);
+  }, [selectedId, filter, goal.id, setSearchParams]);
 
   // Esc closes the panel.
   useEffect(() => {
@@ -218,6 +238,7 @@ export function MapPage() {
           venues={visibleVenues}
           selectedVenue={selectedVenue}
           panelOpen={panelOpen}
+          fitsBySlug={fitsBySlug}
           onSelectVenue={(id) => selectLocation(id)}
           onReady={() => setMapReady(true)}
           onLocateMe={() =>
@@ -238,7 +259,9 @@ export function MapPage() {
               onChange={setFilter}
               openNow={openNow}
               onOpenNowChange={setOpenNow}
-            />
+            >
+              <GoalChip goal={goal} onChange={setGoal} />
+            </FilterChips>
           </div>
         </div>
 
@@ -253,6 +276,7 @@ export function MapPage() {
           tab={tab}
           onTabChange={setTab}
           focusItemId={focusItemId}
+          goal={goal}
           onShare={handleShare}
           onCopy={copy}
         />
@@ -262,6 +286,11 @@ export function MapPage() {
           {venuesLoading && <StatusChip>Loading restaurants…</StatusChip>}
           {!HAS_MAP_KEY && <StatusChip tone="error">Missing VITE_MAPTILER_KEY in web/.env.local</StatusChip>}
           {outsideCoverage && !panelOpen && <StatusChip>MacroMap covers Toronto for now</StatusChip>}
+          {fitsBySlug && !panelOpen && (
+            <StatusChip>
+              Highlighting places with “{goal.label.toLowerCase()}” options ({goal.rule})
+            </StatusChip>
+          )}
           {openNow && !panelOpen && (
             <StatusChip>
               {visibleVenues.length} open now
