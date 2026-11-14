@@ -1,5 +1,12 @@
 import { isVenueCategory } from "../constants/categories";
-import type { LocationDetails, SearchResponse, Venue, VenueCategory } from "../types/venues";
+import type {
+  LocationDetails,
+  RestaurantMenu,
+  RestaurantSummary,
+  SearchResponse,
+  Venue,
+  VenueCategory,
+} from "../types/venues";
 
 /** The DB may hold free-form categories (e.g. "Japanese"); the map only styles a few. */
 const normalizeCategory = (c: string): VenueCategory => (isVenueCategory(c) ? c : "restaurant");
@@ -41,4 +48,16 @@ export function searchPlaces(
     ...r,
     restaurants: r.restaurants.map((h) => ({ ...h, category: normalizeCategory(h.category) })),
   }));
+}
+
+export function fetchRestaurants(signal?: AbortSignal): Promise<RestaurantSummary[]> {
+  return getJson<RestaurantSummary[]>("/api/restaurants", signal).then((rs) =>
+    rs.map((r) => ({ ...r, category: normalizeCategory(r.category) })),
+  );
+}
+
+export function fetchRestaurantMenu(slug: string, signal?: AbortSignal): Promise<RestaurantMenu> {
+  return getJson<RestaurantMenu>(`/api/restaurants/${encodeURIComponent(slug)}`, signal).then(
+    (r) => ({ ...r, category: normalizeCategory(r.category) }),
+  );
 }

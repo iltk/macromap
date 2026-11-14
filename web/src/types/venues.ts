@@ -30,6 +30,7 @@ export interface LocationDetails {
   slug: string;
   name: string;
   category: VenueCategory;
+  brandColor: string | null;
   website: string | null;
   address: string;
   city: string | null;
@@ -73,3 +74,28 @@ export type VenueFilter =
   | { kind: "all" }
   | { kind: "category"; category: VenueCategory }
   | { kind: "chain"; slug: string };
+
+/** Mirrors api RestaurantSummary (one directory card). */
+export interface RestaurantSummary {
+  restaurantId: number;
+  slug: string;
+  name: string;
+  category: VenueCategory;
+  description: string | null;
+  brandColor: string | null;
+  locationCount: number;
+  menuItemCount: number;
+}
+
+/** Mirrors api RestaurantMenu. */
+export interface RestaurantMenu {
+  restaurantId: number;
+  slug: string;
+  name: string;
+  category: VenueCategory;
+  description: string | null;
+  brandColor: string | null;
+  website: string | null;
+  locationCount: number;
+  menu: MenuItem[];
+}
