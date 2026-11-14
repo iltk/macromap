@@ -1,56 +1,84 @@
 @import "tailwindcss";
 
-/* Dark mode is driven by a class on <html> (system / light / dark, see stores/theme.ts). */
+/* Dark mode is driven by a class on <html> (see stores/theme.ts). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Semantic colours used by the components (light values). */
+/*
+ * Design tokens. One accent (deep green), warm neutrals, muted macro colours.
+ * Tailwind's white/gray scale is overridden too, so plain `bg-white` / `text-gray-*`
+ * utilities follow the palette (and flip in dark mode below).
+ */
 @theme {
-  --color-page: #f6f5f1;
-  --color-row-hover: #fbfaf7;
-  --color-link: #1a73e8;
-  --color-ink-link: #8ab4f8; /* link on an ink (gray-900) surface */
-  --color-accent-soft: #e8f0fe;
-  --color-accent-ink: #1967d2;
-  --color-success-soft: #e6f4ea;
-  --color-success-ink: #137333;
-  --color-warn-soft: #fef7e0;
-  --color-warn-ink: #8a4b00;
-  --color-danger-soft: #fce8e6;
-  --color-danger-ink: #c5221f;
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-white: #ffffff;
+  --color-gray-50: #f8f7f4;
+  --color-gray-100: #f0eee9;
+  --color-gray-200: #e4e1da;
+  --color-gray-300: #d0ccc2;
+  --color-gray-400: #a39e93;
+  --color-gray-500: #7a756b;
+  --color-gray-600: #5e5a52;
+  --color-gray-700: #46433d;
+  --color-gray-800: #2f2d29;
+  --color-gray-900: #1d1c19;
+  --color-gray-950: #121110;
+
+  --color-page: #f6f4ef;
+  --color-row-hover: #f8f7f4;
+
+  --color-accent: #1f6a47;
+  --color-accent-hover: #185638;
+  --color-accent-soft: #e3efe7;
+  --color-accent-ink: #1f6a47;
+  --color-link: #1f6a47;
+
+  --color-success-soft: #e3efe7;
+  --color-success-ink: #1f6a47;
+  --color-warn-soft: #fbf1dc;
+  --color-warn-ink: #85560a;
+  --color-danger-soft: #fbe8e5;
+  --color-danger-ink: #b3261e;
+
+  --color-protein: #1f6a47;
+  --color-carbs: #b5862e;
+  --color-fat: #b4553d;
 }
 
-/*
- * Dark theme: Tailwind v4 utilities read colours from CSS variables, so flipping the
- * white/gray scale turns every surface and text colour without per-component dark: classes.
- * "Ink" surfaces (bg-gray-900 + text-white) become light chips on dark, which reads well.
- */
 .dark {
   color-scheme: dark;
-  --color-white: #1c1d20;
-  --color-gray-50: #232428;
-  --color-gray-100: #2a2b30;
-  --color-gray-200: #36383e;
-  --color-gray-300: #474950;
-  --color-gray-400: #6c6f78;
-  --color-gray-500: #9a9da6;
-  --color-gray-600: #b5b8bf;
-  --color-gray-700: #cdd0d5;
-  --color-gray-800: #e2e4e8;
-  --color-gray-900: #f1f2f4;
-  --color-gray-950: #fafafa;
+  --color-white: #1c1b19;
+  --color-gray-50: #22211e;
+  --color-gray-100: #2a2926;
+  --color-gray-200: #363430;
+  --color-gray-300: #47443f;
+  --color-gray-400: #6e6a63;
+  --color-gray-500: #9a958c;
+  --color-gray-600: #b6b1a8;
+  --color-gray-700: #cdc9c1;
+  --color-gray-800: #e2dfd8;
+  --color-gray-900: #f2f0eb;
+  --color-gray-950: #faf9f6;
 
-  --color-page: #141517;
-  --color-row-hover: #222327;
-  --color-link: #8ab4f8;
-  --color-ink-link: #1a73e8;
-  --color-accent-soft: #1e2a3d;
-  --color-accent-ink: #a8c7fa;
-  --color-success-soft: #17301f;
-  --color-success-ink: #81c995;
-  --color-warn-soft: #3a2e10;
-  --color-warn-ink: #fdd663;
-  --color-danger-soft: #3c1d1b;
-  --color-danger-ink: #f28b82;
+  --color-page: #131311;
+  --color-row-hover: #22211e;
+
+  --color-accent: #7cc49b;
+  --color-accent-hover: #95d2ae;
+  --color-accent-soft: #1d3226;
+  --color-accent-ink: #8fd1aa;
+  --color-link: #8fd1aa;
+
+  --color-success-soft: #1d3226;
+  --color-success-ink: #8fd1aa;
+  --color-warn-soft: #362b14;
+  --color-warn-ink: #e9c46a;
+  --color-danger-soft: #3a1f1c;
+  --color-danger-ink: #f19a8f;
+
+  --color-protein: #7cc49b;
+  --color-carbs: #d9ad5b;
+  --color-fat: #e08a73;
 }
 
 @layer base {
@@ -61,10 +89,14 @@
     margin: 0;
   }
   body {
-    font-family: Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     background: var(--color-page);
     color: var(--color-gray-900);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 }
 
@@ -75,23 +107,22 @@
   }
 }
 
-/* keep MapLibre controls clear of the mobile bottom sheet */
-.maplibregl-ctrl-bottom-right {
-  margin-bottom: 4px;
+/* MapLibre controls, in the app's palette */
+.maplibregl-ctrl-group {
+  border-radius: 6px !important;
+  box-shadow: 0 0 0 1px var(--color-gray-300) !important;
 }
-
-/* MapLibre's own controls in dark mode (its stylesheet is more specific, hence !important) */
 .dark .maplibregl-ctrl-group,
 .dark .maplibregl-ctrl.maplibregl-ctrl-attrib,
 .dark .maplibregl-ctrl-attrib.maplibregl-compact {
-  background: #2a2b30 !important;
-  color: #cdd0d5 !important;
+  background: #2a2926 !important;
+  color: #cdc9c1 !important;
 }
 .dark .maplibregl-ctrl-attrib a {
-  color: #cdd0d5 !important;
+  color: #cdc9c1 !important;
 }
 .dark .maplibregl-ctrl-group button + button {
-  border-top-color: #474950;
+  border-top-color: #47443f;
 }
 .dark .maplibregl-ctrl button .maplibregl-ctrl-icon {
   filter: invert(1);

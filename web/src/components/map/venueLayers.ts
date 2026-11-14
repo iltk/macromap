@@ -2,34 +2,26 @@ import type {
   CircleLayerSpecification,
   SymbolLayerSpecification,
 } from "maplibre-gl";
-import { SELECTED_COLOR } from "../../constants/categories";
 import { LABEL_FONT } from "./mapStyles";
 
 export const VENUE_SOURCE = "venues";
 export const SELECTED_SOURCE = "selected-venue";
 
-export const clusterLayer: CircleLayerSpecification = {
+export const clusterLayer = (dark = false): CircleLayerSpecification => ({
   id: "clusters",
   type: "circle",
   source: VENUE_SOURCE,
   filter: ["has", "point_count"],
   paint: {
-    "circle-color": [
-      "step",
-      ["get", "point_count"],
-      "#f28b82",
-      20,
-      "#ea4335",
-      60,
-      "#c5221f",
-    ],
-    "circle-radius": ["step", ["get", "point_count"], 15, 20, 19, 60, 24],
-    "circle-stroke-width": 3,
-    "circle-stroke-color": "rgba(255,255,255,0.9)",
+    "circle-color": dark ? "#e2dfd8" : "#2f2d29",
+    "circle-opacity": 0.92,
+    "circle-radius": ["step", ["get", "point_count"], 14, 20, 18, 60, 22],
+    "circle-stroke-width": 2,
+    "circle-stroke-color": dark ? "#1c1b19" : "#ffffff",
   },
-};
+});
 
-export const clusterCountLayer: SymbolLayerSpecification = {
+export const clusterCountLayer = (dark = false): SymbolLayerSpecification => ({
   id: "cluster-count",
   type: "symbol",
   source: VENUE_SOURCE,
@@ -40,8 +32,8 @@ export const clusterCountLayer: SymbolLayerSpecification = {
     "text-size": 12,
     "text-allow-overlap": true,
   },
-  paint: { "text-color": "#ffffff" },
-};
+  paint: { "text-color": dark ? "#1c1b19" : "#ffffff" },
+});
 
 const pinLayout = (selected: boolean): SymbolLayerSpecification["layout"] => ({
   "icon-image": selected
@@ -78,8 +70,8 @@ export function venuePinLayer(selectedId: string | null, dark = false): SymbolLa
       // pins whose menu has nothing for the active goal fade into the background
       "icon-opacity": ["case", ["get", "dim"], 0.3, 1],
       "text-opacity": ["case", ["get", "dim"], 0.45, 1],
-      "text-color": dark ? "#e8eaed" : "#3c4043",
-      "text-halo-color": dark ? "#202124" : "#ffffff",
+      "text-color": dark ? "#e2dfd8" : "#2f2d29",
+      "text-halo-color": dark ? "#1c1b19" : "#ffffff",
       "text-halo-width": 1.5,
     },
   };
@@ -91,8 +83,8 @@ export const selectedPinLayer = (dark = false): SymbolLayerSpecification => ({
   source: SELECTED_SOURCE,
   layout: pinLayout(true),
   paint: {
-    "text-color": dark ? "#8ab4f8" : SELECTED_COLOR,
-    "text-halo-color": dark ? "#202124" : "#ffffff",
+    "text-color": dark ? "#f2f0eb" : "#1d1c19",
+    "text-halo-color": dark ? "#1c1b19" : "#ffffff",
     "text-halo-width": 2,
   },
 });

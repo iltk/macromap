@@ -19,7 +19,8 @@ export const CATEGORY_LABELS: Record<VenueCategory, string> = {
   bar: "Bar",
 };
 
-export const SELECTED_COLOR = "#1a73e8";
+/** Selected pin colour: the app's ink, so it stands out from every brand colour. */
+export const SELECTED_COLOR = "#1d1c19";
 
 export const PIN_PATH =
   "M16 0C7.163 0 0 7.163 0 16c0 10.5 16 26 16 26s16-15.5 16-26c0-8.837-7.163-16-16-16z";

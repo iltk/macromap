@@ -22,13 +22,12 @@ export function RangeField({
   unit: string;
 }) {
   const open = kind === "upTo" ? max : min;
-  const shown = value ?? open;
   return (
     <label className="block">
       <span className="flex items-baseline justify-between text-sm">
-        <span className="font-semibold text-gray-900">{label}</span>
-        <span className="text-gray-600 tabular-nums">
-          {value === null ? "Any" : `${kind === "upTo" ? "≤" : "≥"} ${value} ${unit}`}
+        <span className="text-gray-800">{label}</span>
+        <span className="text-gray-500 tabular-nums">
+          {value === null ? "No limit" : `${kind === "upTo" ? "up to" : "at least"} ${value} ${unit}`}
         </span>
       </span>
       <input
@@ -36,12 +35,12 @@ export function RangeField({
         min={min}
         max={max}
         step={step}
-        value={shown}
+        value={value ?? open}
         onChange={(e) => {
           const v = Number(e.target.value);
           onChange(v === open ? null : v);
         }}
-        className="mt-2 w-full accent-gray-900"
+        className="mt-1.5 w-full accent-(--color-accent)"
         aria-label={label}
       />
     </label>

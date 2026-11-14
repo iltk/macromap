@@ -1,7 +1,7 @@
 import type { VenueCategory } from "../../types/venues";
 import { brandColorFor, initialsFor, readableOnWhite } from "../../utils/brand";
 
-/** Monogram tile in the chain's brand colour (we don't ship third-party logos). */
+/** Flat monogram tile in the chain's brand colour (no third-party logos are shipped). */
 export function RestaurantLogo({
   name,
   brandColor,
@@ -11,27 +11,19 @@ export function RestaurantLogo({
   name: string;
   brandColor: string | null;
   category: VenueCategory;
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
 }) {
   const color = brandColorFor(brandColor, category);
-  const initials = initialsFor(name);
-  const dims =
-    size === "lg" ? "h-20 w-20 rounded-2xl text-2xl" : "h-14 w-14 rounded-xl text-base";
+  // pale brands (e.g. gold) get dark lettering, everything else white
+  const ink = readableOnWhite(color) === color ? "#ffffff" : "#2b2100";
+  const dims = { sm: "h-9 w-9 text-[11px]", md: "h-11 w-11 text-xs", lg: "h-16 w-16 text-lg" }[size];
   return (
     <span
       aria-hidden
-      // light theme: readable ink for pale brands (e.g. gold); dark theme: the brand colour itself
-      className={`flex shrink-0 items-center justify-center font-bold tracking-tight text-(--logo-ink) dark:text-(--logo-color) ${dims}`}
-      style={
-        {
-          "--logo-color": color,
-          "--logo-ink": readableOnWhite(color),
-          background: `${color}1f`,
-          boxShadow: `inset 0 0 0 1px ${color}55`,
-        } as React.CSSProperties
-      }
+      className={`flex shrink-0 items-center justify-center rounded-md font-bold tracking-tight ${dims}`}
+      style={{ background: color, color: ink }}
     >
-      {initials}
+      {initialsFor(name)}
     </span>
   );
 }

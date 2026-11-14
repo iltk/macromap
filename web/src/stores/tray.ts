@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import type { MenuItem } from "../types/venues";
 import { createPersistentStore } from "../utils/storage";
+import { openSheet } from "./ui";
 
 /** A menu item snapshot, so the tray works across pages without refetching. */
 export interface TrayItem {
@@ -33,14 +34,12 @@ interface TrayState {
   meal: MealEntry[];
   compare: TrayItem[];
   target: DailyTarget | null;
-  open: "meal" | "compare" | null;
 }
 
-const store = createPersistentStore<TrayState>("macromap.tray.v1", {
+const store = createPersistentStore<TrayState>("macromap.tray.v2", {
   meal: [],
   compare: [],
   target: null,
-  open: null,
 });
 
 export const toTrayItem = (m: MenuItem, restaurantName: string, restaurantSlug: string): TrayItem => ({
@@ -83,13 +82,13 @@ export function toggleCompare(item: TrayItem) {
       return { ...s, compare: s.compare.filter((c) => c.id !== item.id) };
     }
     const compare = [...s.compare, item].slice(-2);
-    return { ...s, compare, open: compare.length === 2 ? "compare" : s.open };
+    if (compare.length === 2) openSheet("compare");
+    return { ...s, compare };
   });
 }
 
-export const clearCompare = () => store.set((s) => ({ ...s, compare: [], open: s.open === "compare" ? null : s.open }));
+export const clearCompare = () => store.set((s) => ({ ...s, compare: [] }));
 export const setTarget = (target: DailyTarget | null) => store.set((s) => ({ ...s, target }));
-export const openTray = (open: TrayState["open"]) => store.set((s) => ({ ...s, open }));
 
 export const useTray = () => useSyncExternalStore(store.subscribe, store.get, store.get);
 

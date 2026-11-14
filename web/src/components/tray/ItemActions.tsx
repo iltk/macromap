@@ -1,49 +1,36 @@
 import { addToMeal, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
 import { Icon } from "../ui/icons";
 
-/** "+ Meal" and "Compare" buttons for a menu item. `compact` = icon-only (dense lists/tables). */
-export function ItemActions({ item, compact = false }: { item: TrayItem; compact?: boolean }) {
+/** "Add" (to meal) and "Compare" controls for a menu item. */
+export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOnly?: boolean }) {
   const { meal, compare } = useTray();
   const inMeal = meal.find((e) => e.item.id === item.id)?.qty ?? 0;
   const comparing = compare.some((c) => c.id === item.id);
-
-  const base =
-    "inline-flex items-center justify-center gap-1 rounded-full border text-xs font-semibold transition-colors";
-  const size = compact ? "h-7 w-7" : "h-7 px-2.5";
+  const base = "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium";
 
   return (
-    <span className="inline-flex gap-1.5">
+    <span className="inline-flex shrink-0 gap-1">
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          addToMeal(item);
-        }}
-        title={inMeal ? `In your meal ×${inMeal}. Add another` : "Add to meal"}
+        onClick={() => addToMeal(item)}
+        title={inMeal ? `In your meal (×${inMeal}). Add another` : "Add to your meal"}
         aria-label={`Add ${item.name} to meal`}
-        className={`${base} ${size} ${
-          inMeal ? "border-[#137333] bg-success-soft text-success-ink" : "border-gray-300 text-gray-700 hover:border-gray-900"
-        }`}
+        className={`${base} ${inMeal ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
       >
-        <Icon name="add" className="h-3.5 w-3.5" />
-        {!compact && (inMeal ? `Meal ×${inMeal}` : "Meal")}
-        {compact && inMeal > 0 && <span className="sr-only">×{inMeal}</span>}
+        <Icon name={inMeal ? "check" : "add"} className="h-3.5 w-3.5" />
+        <span className={iconOnly ? "sr-only" : ""}>{inMeal ? `Added${inMeal > 1 ? ` ×${inMeal}` : ""}` : "Add"}</span>
+        {iconOnly && inMeal > 1 && <span className="tabular-nums">{inMeal}</span>}
       </button>
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleCompare(item);
-        }}
+        onClick={() => toggleCompare(item)}
         aria-pressed={comparing}
         title={comparing ? "Remove from comparison" : "Compare with another item"}
         aria-label={`${comparing ? "Stop comparing" : "Compare"} ${item.name}`}
-        className={`${base} ${size} ${
-          comparing ? "border-[#1a73e8] bg-accent-soft text-accent-ink" : "border-gray-300 text-gray-700 hover:border-gray-900"
-        }`}
+        className={`${base} ${comparing ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
       >
         <Icon name="compare" className="h-3.5 w-3.5" />
-        {!compact && (comparing ? "Comparing" : "Compare")}
+        <span className={iconOnly ? "sr-only" : ""}>Compare</span>
       </button>
     </span>
   );

@@ -10,14 +10,14 @@ import Map, {
 import type { GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { FeatureCollection, Point } from "geojson";
+import { useResolvedTheme } from "../../stores/theme";
 import type { Coordinates, Venue } from "../../types/venues";
+import { brandColorFor, initialsFor } from "../../utils/brand";
 import { TORONTO } from "../../utils/geo";
 import { UserPositionMarker } from "../markers/UserPositionMarker";
 import { Icon } from "../ui/icons";
 import { MAP_STYLES } from "./mapStyles";
-import { useResolvedTheme } from "../../stores/theme";
 import { registerPinImages, type PinBrand } from "./pinImages";
-import { brandColorFor, initialsFor } from "../../utils/brand";
 import {
   INTERACTIVE_LAYERS,
   SELECTED_SOURCE,
@@ -33,38 +33,15 @@ interface MapContainerProps {
   userPosition: Coordinates | null;
   venues: Venue[];
   selectedVenue: Venue | null;
-  panelOpen: boolean;
-  /** slug -> number of menu items that fit the active goal; null when no goal is set. */
+  /** slug -> number of menu items that fit the viewer's goal; null when no goal is set. */
   fitsBySlug: Map<string, number> | null;
   onSelectVenue: (locationId: string | null) => void;
   onLocateMe: () => void;
   onReady: () => void;
+  onCenterChange: (c: Coordinates) => void;
 }
 
-type VenueProps = Pick<Venue, "locationId" | "name" | "category" | "slug"> & {
-  label: string;
-  dim: boolean;
-};
-
-function toFeatureCollection(
-  venues: Venue[],
-  fitsBySlug: Map<string, number> | null,
-): FeatureCollection<Point, VenueProps> {
-  return {
-    type: "FeatureCollection",
-    features: venues.map((v) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [v.longitude, v.latitude] },
-      properties: {
-        locationId: v.locationId,
-        name: v.name,
-        category: v.category,
-        slug: v.slug,
-        ...pinLabel(v, fitsBySlug),
-      },
-    })),
-  };
-}
+type VenueProps = Pick<Venue, "locationId" | "name" | "category" | "slug"> & { label: string; dim: boolean };
 
 function pinLabel(v: Venue, fitsBySlug: Map<string, number> | null) {
   if (!fitsBySlug) return { label: v.name, dim: false };
@@ -72,59 +49,74 @@ function pinLabel(v: Venue, fitsBySlug: Map<string, number> | null) {
   return { label: fits > 0 ? `${v.name} · ${fits} fit` : v.name, dim: fits === 0 };
 }
 
+function toFeatureCollection(venues: Venue[], fitsBySlug: Map<string, number> | null): FeatureCollection<Point, VenueProps> {
+  return {
+    type: "FeatureCollection",
+    features: venues.map((v) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [v.longitude, v.latitude] },
+      properties: { locationId: v.locationId, name: v.name, category: v.category, slug: v.slug, ...pinLabel(v, fitsBySlug) },
+    })),
+  };
+}
+
 export function MapContainer({
   mapRef,
   userPosition,
   venues,
   selectedVenue,
-  panelOpen,
   fitsBySlug,
   onSelectVenue,
   onLocateMe,
   onReady,
+  onCenterChange,
 }: MapContainerProps) {
   const [satellite, setSatellite] = useState(false);
+  const [cursor, setCursor] = useState("");
   const dark = useResolvedTheme() === "dark";
-  const styleId = satellite ? "satellite" : dark ? "streetsDark" : "streets";
-  const [cursor, setCursor] = useState<string>("");
+  const styleUrl = MAP_STYLES[satellite ? "satellite" : dark ? "streetsDark" : "streets"].url;
+  // read by the pin image handler; images are redrawn when the style (theme) changes
+  const darkRef = useRef(dark);
+  useEffect(() => {
+    darkRef.current = dark;
+  }, [dark]);
 
-  const venueData = useMemo(() => toFeatureCollection(venues, fitsBySlug), [venues, fitsBySlug]);
-  const selectedId = selectedVenue?.locationId ?? null;
-  const selectedData = useMemo(
-    () => toFeatureCollection(selectedVenue ? [selectedVenue] : [], fitsBySlug),
-    [selectedVenue, fitsBySlug],
-  );
   // slug -> brand, read lazily by the pin image handler (venues load after the map mounts)
   const brands = useRef(new globalThis.Map<string, PinBrand>());
   useEffect(() => {
     for (const v of venues) {
       if (!brands.current.has(v.slug)) {
-        brands.current.set(v.slug, {
-          color: brandColorFor(v.brandColor, v.category),
-          initials: initialsFor(v.name),
-        });
+        brands.current.set(v.slug, { color: brandColorFor(v.brandColor, v.category), initials: initialsFor(v.name) });
       }
     }
   }, [venues]);
 
-  // Callback ref: hook up pin images the moment the map exists, before any layer asks for them.
   const attachMap = useCallback(
     (instance: MapRef | null) => {
       mapRef.current = instance;
-      if (instance) registerPinImages(instance.getMap(), (slug) => brands.current.get(slug));
+      if (instance)
+        registerPinImages(
+          instance.getMap(),
+          (slug) => brands.current.get(slug),
+          () => (darkRef.current ? "#f2f0eb" : "#1d1c19"),
+        );
     },
     [mapRef],
   );
 
-  const pinLayer = useMemo(() => venuePinLayer(selectedId, dark), [selectedId, dark]);
+  const venueData = useMemo(() => toFeatureCollection(venues, fitsBySlug), [venues, fitsBySlug]);
+  const selectedData = useMemo(
+    () => toFeatureCollection(selectedVenue ? [selectedVenue] : [], fitsBySlug),
+    [selectedVenue, fitsBySlug],
+  );
+  const pinLayer = useMemo(() => venuePinLayer(selectedVenue?.locationId ?? null, dark), [selectedVenue, dark]);
   const selectedLayer = useMemo(() => selectedPinLayer(dark), [dark]);
+  const clusters = useMemo(() => clusterLayer(dark), [dark]);
+  const clusterCounts = useMemo(() => clusterCountLayer(dark), [dark]);
 
   const handleClick = async (e: MapLayerMouseEvent) => {
     const feature = e.features?.[0];
-    if (!feature) {
-      onSelectVenue(null);
-      return;
-    }
+    if (!feature) return onSelectVenue(null);
     if (feature.layer.id === "clusters") {
       const source = e.target.getSource(VENUE_SOURCE) as GeoJSONSource | undefined;
       const clusterId = feature.properties?.cluster_id as number | undefined;
@@ -138,82 +130,61 @@ export function MapContainer({
     if (id) onSelectVenue(id);
   };
 
-  const nextStyle = satellite ? "streets" : "satellite";
+  const ctrl =
+    "flex h-[29px] items-center justify-center gap-1 rounded-md border border-gray-300 bg-white px-2 text-xs font-medium text-gray-800 hover:bg-gray-50 disabled:text-gray-300";
 
   return (
     <div className="relative h-full w-full">
       <Map
         ref={attachMap}
-        initialViewState={{ longitude: TORONTO.lng, latitude: TORONTO.lat, zoom: 12 }}
-        mapStyle={MAP_STYLES[styleId].url}
+        initialViewState={{ longitude: TORONTO.lng, latitude: TORONTO.lat, zoom: 13 }}
+        mapStyle={styleUrl}
         interactiveLayerIds={INTERACTIVE_LAYERS}
         cursor={cursor}
         onMouseEnter={() => setCursor("pointer")}
         onMouseLeave={() => setCursor("")}
         onClick={handleClick}
-        onLoad={onReady}
+        onLoad={(e) => {
+          const c = e.target.getCenter();
+          onCenterChange({ lat: c.lat, lng: c.lng });
+          onReady();
+        }}
+        onMoveEnd={(e) => {
+          const c = e.target.getCenter();
+          onCenterChange({ lat: c.lat, lng: c.lng });
+        }}
         attributionControl={false}
         style={{ width: "100%", height: "100%" }}
       >
-        <Source
-          id={VENUE_SOURCE}
-          type="geojson"
-          data={venueData}
-          cluster
-          clusterMaxZoom={12}
-          clusterRadius={45}
-        >
-          <Layer {...clusterLayer} />
-          <Layer {...clusterCountLayer} />
+        <Source id={VENUE_SOURCE} type="geojson" data={venueData} cluster clusterMaxZoom={12} clusterRadius={45}>
+          <Layer {...clusters} />
+          <Layer {...clusterCounts} />
           <Layer {...pinLayer} />
         </Source>
         <Source id={SELECTED_SOURCE} type="geojson" data={selectedData}>
           <Layer {...selectedLayer} />
         </Source>
-
         <UserPositionMarker position={userPosition} />
-
         <NavigationControl position="bottom-right" showCompass={false} />
-        <AttributionControl
-          position="bottom-right"
-          compact
-          customAttribution="Restaurant locations © OpenStreetMap contributors (ODbL)"
-        />
+        <AttributionControl position="bottom-right" compact customAttribution="Restaurant locations © OpenStreetMap contributors (ODbL)" />
       </Map>
 
-      {/* My location: sits above the zoom buttons, like Google Maps */}
-      <button
-        type="button"
-        onClick={onLocateMe}
-        disabled={!userPosition}
-        title={userPosition ? "Show your location" : "Location unavailable"}
-        className="absolute right-[10px] bottom-[118px] flex h-[29px] w-[29px] items-center justify-center rounded bg-white text-gray-700 shadow-[0_0_0_2px_rgba(0,0,0,0.1)] hover:bg-gray-50 disabled:text-gray-300"
-      >
-        <Icon name="myLocation" className="h-[18px] w-[18px]" />
-      </button>
-
-      {/* Map / Satellite toggle (bottom-left, like Google's layer switcher) */}
-      <button
-        type="button"
-        onClick={() => setSatellite((v) => !v)}
-        className={`absolute bottom-6 left-4 flex h-16 w-16 flex-col items-center justify-end overflow-hidden rounded-lg border-2 border-white shadow-lg transition-[left] duration-300 ${panelOpen ? "max-md:hidden md:left-[424px]" : ""}`}
-        style={{
-          background:
-            nextStyle === "satellite"
-              ? "linear-gradient(135deg,#3a5a40,#588157 45%,#a3b18a)"
-              : "linear-gradient(135deg,#f1f3f4,#e8eaed 50%,#c8e6c9)",
-        }}
-        aria-label={`Switch to ${MAP_STYLES[nextStyle].label} view`}
-      >
-        <span
-          className={`mb-1 flex items-center gap-0.5 text-[11px] font-medium ${
-            nextStyle === "satellite" ? "text-white" : "text-[#202124]"
-          }`}
-        >
+      <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+        <button type="button" onClick={() => setSatellite((v) => !v)} className={ctrl} aria-pressed={satellite}>
           <Icon name="layers" className="h-3.5 w-3.5" />
-          {MAP_STYLES[nextStyle].label}
-        </span>
-      </button>
+          {satellite ? "Map" : "Satellite"}
+        </button>
+        <button
+          type="button"
+          onClick={onLocateMe}
+          disabled={!userPosition}
+          title={userPosition ? "Go to your location" : "Location unavailable"}
+          className={ctrl}
+        >
+          <Icon name="myLocation" className="h-3.5 w-3.5" />
+          My location
+        </button>
+      </div>
     </div>
   );
 }

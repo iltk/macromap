@@ -1,12 +1,16 @@
-import type { Venue, VenueFilter } from "../types/venues";
+import type { Venue, VenueCategory } from "../types/venues";
 
-export function applyFilter(venues: Venue[], filter: VenueFilter): Venue[] {
-  switch (filter.kind) {
-    case "all":
-      return venues;
-    case "category":
-      return venues.filter((v) => v.category === filter.category);
-    case "chain":
-      return venues.filter((v) => v.slug === filter.slug);
-  }
+export interface MapFilterState {
+  openNow: boolean;
+  category: VenueCategory | null;
+  chain: string | null;
+}
+
+export function applyMapFilters(venues: Venue[], f: MapFilterState, isOpen: (v: Venue) => boolean): Venue[] {
+  return venues.filter(
+    (v) =>
+      (!f.category || v.category === f.category) &&
+      (!f.chain || v.slug === f.chain) &&
+      (!f.openNow || isOpen(v)),
+  );
 }

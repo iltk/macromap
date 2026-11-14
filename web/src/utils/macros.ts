@@ -2,10 +2,11 @@ import type { MenuItem } from "../types/venues";
 import { fitsLimits, type Goal } from "./goals";
 import { allergenStatus } from "./allergens";
 
+/** CSS colours for each macro (theme-aware via CSS variables). */
 export const MACRO_COLORS = {
-  protein: "#1a73e8",
-  carbs: "#f9ab00",
-  fat: "#d93025",
+  protein: "var(--color-protein)",
+  carbs: "var(--color-carbs)",
+  fat: "var(--color-fat)",
 } as const;
 
 /** Share of calories coming from each macro (4/4/9 kcal per gram). */

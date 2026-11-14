@@ -1,5 +1,5 @@
 import type { Map as MaplibreMap } from "maplibre-gl";
-import { PIN_PATH, SELECTED_COLOR } from "../../constants/categories";
+import { PIN_PATH } from "../../constants/categories";
 import { readableOnWhite } from "../../utils/brand";
 
 const PIXEL_RATIO = 2;
@@ -18,8 +18,8 @@ export interface PinBrand {
  *
  * Image ids: `pin-<slug>` and `pin-<slug>-selected`.
  */
-function drawPin(brand: PinBrand, selected: boolean): ImageData | null {
-  const color = selected ? SELECTED_COLOR : brand.color;
+function drawPin(brand: PinBrand, selectedColor: string | null): ImageData | null {
+  const color = selectedColor ?? brand.color;
   const canvas = document.createElement("canvas");
   canvas.width = W * PIXEL_RATIO;
   canvas.height = H * PIXEL_RATIO;
@@ -57,13 +57,17 @@ const registered = new WeakSet<MaplibreMap>();
 const FALLBACK: PinBrand = { color: "#5f6368", initials: "•" };
 
 /** Idempotent; call as soon as the map instance exists (before its style finishes loading). */
-export function registerPinImages(map: MaplibreMap, brandFor: (slug: string) => PinBrand | undefined) {
+export function registerPinImages(
+  map: MaplibreMap,
+  brandFor: (slug: string) => PinBrand | undefined,
+  selectedColor: () => string,
+) {
   if (registered.has(map)) return;
   registered.add(map);
   map.on("styleimagemissing", (e: { id: string }) => {
     const m = /^pin-(.+?)(-selected)?$/.exec(e.id);
     if (!m || map.hasImage(e.id)) return;
-    const img = drawPin(brandFor(m[1]) ?? FALLBACK, Boolean(m[2]));
+    const img = drawPin(brandFor(m[1]) ?? FALLBACK, m[2] ? selectedColor() : null);
     if (img) map.addImage(e.id, img, { pixelRatio: PIXEL_RATIO });
   });
 }

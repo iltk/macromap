@@ -4,8 +4,8 @@ export function Toast({ message, tone = "dark" }: { message: string | null; tone
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed bottom-20 left-1/2 z-40 -translate-x-1/2 rounded-md px-4 py-3 text-sm shadow-lg ${
-        tone === "error" ? "bg-[#d93025] text-white" : "bg-[#323232] text-white"
+      className={`pointer-events-none fixed bottom-6 left-1/2 z-40 -translate-x-1/2 rounded-md px-3.5 py-2.5 text-sm shadow-lg ${
+        tone === "error" ? "bg-danger-ink text-white" : "bg-gray-900 text-white"
       }`}
     >
       {message}

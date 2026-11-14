@@ -114,11 +114,9 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
   return (
     <div ref={rootRef} className="relative w-full">
       <div
-        className={`flex h-12 items-center gap-2 bg-white pr-2 pl-4 shadow-[0_2px_4px_rgba(0,0,0,0.2),0_-1px_0_rgba(0,0,0,0.02)] ${
-          showDropdown ? "rounded-t-3xl" : "rounded-3xl"
-        }`}
+        className="flex h-10 items-center gap-2 rounded-md border border-gray-300 bg-white pr-1 pl-3 focus-within:border-accent"
       >
-        <Icon name="search" className="h-5 w-5 shrink-0 text-gray-500" />
+        <Icon name="search" className="h-4 w-4 shrink-0 text-gray-400" />
         <input
           type="text"
           role="combobox"
@@ -126,8 +124,8 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
           aria-controls={listId}
           aria-autocomplete="list"
           aria-label="Search restaurants and menu items"
-          placeholder="Search restaurants or dishes"
-          className="h-full min-w-0 flex-1 bg-transparent text-[15px] text-gray-900 outline-none placeholder:text-gray-500"
+          placeholder="Search places or dishes"
+          className="h-full min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -144,10 +142,10 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
               setQuery("");
               setOpen(false);
             }}
-            className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100"
             aria-label="Clear search"
           >
-            <Icon name="close" className="h-5 w-5" />
+            <Icon name="close" className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -156,21 +154,21 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
         <ul
           id={listId}
           role="listbox"
-          className="absolute inset-x-0 top-12 z-10 max-h-[60vh] overflow-y-auto rounded-b-3xl border-t border-gray-200 bg-white py-2 shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
+          className="absolute inset-x-0 top-11 z-30 max-h-[60vh] overflow-y-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg"
         >
-          {!browsing && loading && <li className="px-5 py-3 text-sm text-gray-500">Searching…</li>}
+          {!browsing && loading && <li className="px-4 py-3 text-sm text-gray-500">Searching…</li>}
           {current?.error && (
-            <li className="px-5 py-3 text-sm text-red-600">Search is unavailable right now.</li>
+            <li className="px-4 py-3 text-sm text-danger-ink">Search is unavailable right now.</li>
           )}
           {browsing && (
-            <li className="flex items-center justify-between px-5 pt-1 pb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">
-              {saved.length > 0 ? "Saved & recent" : "Recent"}
+            <li className="flex items-center justify-between px-4 pt-2 pb-1 text-xs text-gray-500">
+              {saved.length > 0 ? "Saved and recent" : "Recent"}
               {recents.length > 0 && (
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={clearRecents}
-                  className="font-medium tracking-normal text-link normal-case hover:underline"
+                  className="text-link hover:underline"
                 >
                   Clear history
                 </button>
@@ -178,7 +176,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
             </li>
           )}
           {!browsing && current?.data && options.length === 0 && (
-            <li className="px-5 py-3 text-sm text-gray-500">No results for “{current.query}”.</li>
+            <li className="px-4 py-3 text-sm text-gray-500">No results for “{current.query}”.</li>
           )}
           {options.map((opt, i) => (
             <li
@@ -188,13 +186,13 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
               onMouseEnter={() => setActive(i)}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => choose(opt)}
-              className={`flex cursor-pointer items-center gap-3 px-4 py-2.5 ${
+              className={`flex cursor-pointer items-center gap-3 px-3 py-2 ${
                 i === active ? "bg-gray-100" : ""
               }`}
             >
               {opt.kind === "place" ? (
                 <>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-600">
                     <Icon name={opt.group === "saved" ? "bookmark" : "history"} className="h-4 w-4" />
                   </span>
                   <span className="min-w-0">
@@ -205,7 +203,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
               ) : opt.kind === "restaurant" ? (
                 <>
                   <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-white"
                     style={{ background: CATEGORY_COLORS[opt.hit.category] ?? "#ea4335" }}
                   >
                     <Icon name="place" className="h-4 w-4" />
@@ -221,7 +219,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
                 </>
               ) : (
                 <>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-600">
                     <Icon name="restaurant" className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">
