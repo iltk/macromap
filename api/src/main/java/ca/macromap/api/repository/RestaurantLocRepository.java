@@ -15,7 +15,7 @@ public interface RestaurantLocRepository extends JpaRepository<RestaurantLocatio
 
     @Query("""
         SELECT new ca.macromap.api.dto.RestaurantPin(
-            rl.id, r.id, r.slug, r.name, r.category, rl.latitude, rl.longitude)
+            rl.id, r.id, r.slug, r.name, r.category, r.brandColor, rl.latitude, rl.longitude, rl.openingHours)
         FROM RestaurantLocation rl
         JOIN rl.restaurant r
         """)

@@ -22,7 +22,7 @@ REPO = ROOT.parent
 MENUS = ROOT / "data" / "menus"
 MIGRATIONS = REPO / "api" / "src" / "main" / "resources" / "db" / "migration"
 AW_XLSX = REPO / "api" / "aw_nutrition.xlsx"
-CSV_FIELDS = ["menu_category", "name", "serving_g", "calories", "fat_g", "protein_g", "carbs_g", "source", "last_verified"]
+CSV_FIELDS = ["menu_category", "name", "serving_g", "calories", "fat_g", "protein_g", "carbs_g", "source", "last_verified", "allergens"]
 
 RESTAURANTS = [
     # slug, name, category, website, description, brand colour
@@ -51,6 +51,11 @@ def num(v):
 
 
 def aw_xlsx_to_csv() -> None:
+    # allergens aren't in the spreadsheet; keep whatever was entered by hand in aw.csv
+    existing_allergens = {}
+    if (MENUS / "aw.csv").exists():
+        with open(MENUS / "aw.csv", newline="") as f:
+            existing_allergens = {r["name"]: r.get("allergens") or "" for r in csv.DictReader(f)}
     rows = read_rows(str(AW_XLSX))
     header = rows[0]
     flag_col = header.index("Flag") if "Flag" in header else None
@@ -67,6 +72,7 @@ def aw_xlsx_to_csv() -> None:
         out.append({
             "menu_category": category, "name": name, "serving_g": serving, "calories": cal,
             "fat_g": fat, "protein_g": protein, "carbs_g": carbs, "source": source, "last_verified": "",
+            "allergens": existing_allergens.get(name, ""),
         })
     with open(MENUS / "aw.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS, lineterminator="\n")
@@ -100,10 +106,11 @@ def build_menus_sql() -> str:
         for r in items:
             serving = num(r.get("serving_g"))
             lines.append(
-                "INSERT INTO menu_items (id, restaurant_id, name, menu_category, serving_size, calories, protein, carbs, fat, source, last_verified) VALUES "
+                "INSERT INTO menu_items (id, restaurant_id, name, menu_category, serving_size, calories, protein, carbs, fat, source, last_verified, allergens) VALUES "
                 f"(gen_random_uuid(), {rid}, {q(r['name'].strip())}, {q(r.get('menu_category'))}, "
                 f"{q(f'{serving} g' if serving else None)}, {q(num(r.get('calories')))}, {q(num(r.get('protein_g')))}, "
-                f"{q(num(r.get('carbs_g')))}, {q(num(r.get('fat_g')))}, {q(r.get('source'))}, {q(r.get('last_verified'))});"
+                f"{q(num(r.get('carbs_g')))}, {q(num(r.get('fat_g')))}, {q(r.get('source'))}, {q(r.get('last_verified'))}, "
+                f"{q((r.get('allergens') or '').strip())});"
             )
         lines.append("")
     return "\n".join(lines)

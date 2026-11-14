@@ -39,20 +39,22 @@ class RestaurantControllerTest {
     @Test
     void pinsReturnsAllFields() throws Exception {
         when(service.getAllPins()).thenReturn(List.of(new RestaurantPin(
-                LOC_ID, 1L, "aw", "A&W", "restaurant", new BigDecimal("43.648832"), new BigDecimal("-79.372345"))));
+                LOC_ID, 1L, "aw", "A&W", "restaurant", "#e36b0a", new BigDecimal("43.648832"), new BigDecimal("-79.372345"), "24/7")));
 
         mvc.perform(get("/api/restaurants/pins"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].locationId").value(LOC_ID.toString()))
                 .andExpect(jsonPath("$[0].slug").value("aw"))
                 .andExpect(jsonPath("$[0].category").value("restaurant"))
-                .andExpect(jsonPath("$[0].latitude").value(43.648832));
+                .andExpect(jsonPath("$[0].latitude").value(43.648832))
+                .andExpect(jsonPath("$[0].brandColor").value("#e36b0a"))
+                .andExpect(jsonPath("$[0].openingHours").value("24/7"));
     }
 
     @Test
     void locationDetailsIncludesMenu() throws Exception {
         MenuItemDto item = new MenuItemDto(UUID.randomUUID(), "Teen Burger", "Burger", "250 g", 500,
-                new BigDecimal("27"), new BigDecimal("36"), new BigDecimal("30"), "test");
+                new BigDecimal("27"), new BigDecimal("36"), new BigDecimal("30"), "test", List.of("milk", "wheat"));
         when(service.getLocationDetails(LOC_ID)).thenReturn(new LocationDetails(
                 LOC_ID, 1L, "aw", "A&W", "restaurant", "#e36b0a", "https://web.aw.ca/", "85 Front Street East, Toronto, ON",
                 "Toronto", null, "24/7", new BigDecimal("43.648832"), new BigDecimal("-79.372345"), List.of(item)));
@@ -62,7 +64,8 @@ class RestaurantControllerTest {
                 .andExpect(jsonPath("$.name").value("A&W"))
                 .andExpect(jsonPath("$.openingHours").value("24/7"))
                 .andExpect(jsonPath("$.menu[0].name").value("Teen Burger"))
-                .andExpect(jsonPath("$.menu[0].calories").value(500));
+                .andExpect(jsonPath("$.menu[0].calories").value(500))
+                .andExpect(jsonPath("$.menu[0].allergens[1]").value("wheat"));
     }
 
     @Test

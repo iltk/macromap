@@ -10,6 +10,9 @@ public record RestaurantPin(
         String slug,
         String name,
         String category,
+        String brandColor,
         BigDecimal latitude,
-        BigDecimal longitude
+        BigDecimal longitude,
+        /* raw OpenStreetMap opening_hours, null when unknown */
+        String openingHours
 ) {}

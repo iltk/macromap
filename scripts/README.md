@@ -15,9 +15,14 @@ its checksum changes).
 * `data/menus/mcdonalds.csv`, `data/menus/tim-hortons.csv`: **fill these in** from the official
   Canadian nutrition pages. Columns:
 
-  `menu_category,name,serving_g,calories,fat_g,protein_g,carbs_g,source,last_verified`
+  `menu_category,name,serving_g,calories,fat_g,protein_g,carbs_g,source,last_verified,allergens`
 
-  e.g. `Burger,Big Mac,,,,,,https://www.mcdonalds.com/ca/en-ca/product/big-mac.html,2026-11-14`
+  e.g. `Burger,Big Mac,,,,,,https://www.mcdonalds.com/ca/en-ca/product/big-mac.html,2026-11-14,milk;egg;wheat;soy;sesame;mustard`
+
+* `allergens` (also in `aw.csv`, kept across spreadsheet re-imports): copy **only** from the chain's official
+  allergen guide. Leave blank when unknown (the app then never shows the item as safe), write `none` when the guide
+  lists no allergens, otherwise `;`-separated codes from: `milk egg wheat soy sesame mustard peanut treenut fish
+  shellfish sulphites`.
 
 To add a chain: add it to `RESTAURANTS` in `build_seed.py` and `CHAINS` in `fetch_osm_locations.py`
 (using its `brand:wikidata` id), then run both scripts.
