@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router";
 import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, macroSplit, needsCheck, proteinDensity } from "../../utils/macros";
 import { Icon } from "../ui/icons";
@@ -13,12 +14,13 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 interface MenuTabProps {
+  slug: string;
   restaurantName: string;
   menu: MenuItem[];
   focusItemId: string | null;
 }
 
-export function MenuTab({ restaurantName, menu, focusItemId }: MenuTabProps) {
+export function MenuTab({ slug, restaurantName, menu, focusItemId }: MenuTabProps) {
   const [sort, setSort] = useState<SortKey>("menu");
   const [text, setText] = useState("");
   const maxCalories = useMemo(
@@ -131,7 +133,12 @@ export function MenuTab({ restaurantName, menu, focusItemId }: MenuTabProps) {
             aria-label="Maximum calories"
           />
         </label>
-        <MacroLegend />
+        <div className="flex items-center justify-between gap-2">
+          <MacroLegend />
+          <Link to={`/restaurants/${slug}`} className="shrink-0 text-xs font-medium text-[#1a73e8] hover:underline">
+            Full menu →
+          </Link>
+        </div>
       </div>
 
       {visible.length === 0 ? (
@@ -173,7 +180,7 @@ function MacroLegend() {
           {k[0].toUpperCase() + k.slice(1)}
         </span>
       ))}
-      <span className="ml-auto">bar = share of calories</span>
+
     </div>
   );
 }

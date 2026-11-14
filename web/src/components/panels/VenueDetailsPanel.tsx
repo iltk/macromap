@@ -84,7 +84,7 @@ function PanelContent({
   onShare,
   onCopy,
 }: VenueDetailsPanelProps & { details: LocationDetails }) {
-  const color = CATEGORY_COLORS[details.category] ?? CATEGORY_COLORS.restaurant;
+  const color = details.brandColor ?? CATEGORY_COLORS[details.category] ?? CATEGORY_COLORS.restaurant;
   const status = getOpenStatus(details.openingHours);
   const distance = userPosition
     ? formatDistance(
@@ -163,6 +163,7 @@ function PanelContent({
       ) : (
         <MenuTab
           key={details.restaurantId}
+          slug={details.slug}
           restaurantName={details.name}
           menu={details.menu}
           focusItemId={focusItemId}

@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import type { MapRef } from "react-map-gl/maplibre";
-import { MapContainer } from "./components/map/MapContainer";
-import { HAS_MAP_KEY } from "./components/map/mapStyles";
-import { VenueDetailsPanel, type PanelTab } from "./components/panels/VenueDetailsPanel";
-import { FilterChips } from "./components/search/FilterChips";
-import { SearchBar } from "./components/search/SearchBar";
-import { Toast } from "./components/ui/Toast";
-import { useGeolocation } from "./hooks/useGeolocation";
-import { useLocationDetails } from "./hooks/useLocationDetails";
-import { useToast } from "./hooks/useToast";
-import { useVenueData } from "./hooks/useVenueData";
-import type { Coordinates, MenuItemHit, RestaurantHit, Venue, VenueFilter } from "./types/venues";
-import { applyFilter } from "./utils/filter";
-import { TORONTO, distanceMeters, nearest } from "./utils/geo";
+import { MapContainer } from "../components/map/MapContainer";
+import { HAS_MAP_KEY } from "../components/map/mapStyles";
+import { VenueDetailsPanel, type PanelTab } from "../components/panels/VenueDetailsPanel";
+import { FilterChips } from "../components/search/FilterChips";
+import { SearchBar } from "../components/search/SearchBar";
+import { Toast } from "../components/ui/Toast";
+import { Icon } from "../components/ui/icons";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { useLocationDetails } from "../hooks/useLocationDetails";
+import { useToast } from "../hooks/useToast";
+import { useVenueData } from "../hooks/useVenueData";
+import type { Coordinates, MenuItemHit, RestaurantHit, Venue, VenueFilter } from "../types/venues";
+import { applyFilter } from "../utils/filter";
+import { TORONTO, distanceMeters, nearest } from "../utils/geo";
 
 const COVERAGE_RADIUS_M = 60_000;
 const PANEL_WIDTH = 408;
-
-const readPlaceParam = () => new URLSearchParams(window.location.search).get("place");
 
 function panelPadding() {
   const desktop = window.matchMedia("(min-width: 768px)").matches;
@@ -26,21 +26,34 @@ function panelPadding() {
     : { left: 0, top: 0, right: 0, bottom: Math.round(window.innerHeight * 0.62) };
 }
 
-function App() {
+export function MapPage() {
   const mapRef = useRef<MapRef>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const { venues, isLoading: venuesLoading, error: venuesError } = useVenueData();
   const { coords: userPosition } = useGeolocation();
-  const [selectedId, setSelectedId] = useState<string | null>(readPlaceParam);
+  const [selectedId, setSelectedId] = useState<string | null>(() => searchParams.get("place"));
   const [tab, setTab] = useState<PanelTab>("overview");
   const [focusItemId, setFocusItemId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<VenueFilter>({ kind: "all" });
+  const [filter, setFilter] = useState<VenueFilter>(() => {
+    const chain = searchParams.get("chain");
+    return chain ? { kind: "chain", slug: chain } : { kind: "all" };
+  });
   const [mapReady, setMapReady] = useState(false);
   const toast = useToast();
   const { details, isLoading, error, retry } = useLocationDetails(selectedId);
 
   // A deep link (?place=) is flown to once its details arrive; otherwise we centre on the user once.
   const pendingFly = useRef<string | null>(selectedId);
-  const centeredOnUser = useRef(Boolean(selectedId));
+  // ?chain= without a place: frame that chain's locations instead of the user.
+  const [initialChain] = useState(() =>
+    !selectedId && filter.kind === "chain" ? filter.slug : null,
+  );
+  const pendingFitChain = useRef<string | null>(initialChain);
+  const centeredOnUser = useRef(Boolean(selectedId) || initialChain !== null);
+
+  useEffect(() => {
+    document.title = "MacroMap · Restaurant macros near you";
+  }, []);
 
   const visibleVenues = useMemo(() => applyFilter(venues, filter), [venues, filter]);
   const selectedVenue: Venue | null = useMemo(() => {
@@ -97,13 +110,40 @@ function App() {
     }
   }, [mapReady, userPosition]);
 
-  // Keep ?place= in the URL so the current place can be shared / survives reloads.
+  // Frame all locations of a chain when arriving via ?chain=.
   useEffect(() => {
-    const url = new URL(window.location.href);
-    if (selectedId) url.searchParams.set("place", selectedId);
-    else url.searchParams.delete("place");
-    window.history.replaceState(null, "", url);
-  }, [selectedId]);
+    const slug = pendingFitChain.current;
+    if (!mapReady || !slug || venues.length === 0) return;
+    pendingFitChain.current = null;
+    const pts = venues.filter(
+      (v) => v.slug === slug && distanceMeters({ lat: v.latitude, lng: v.longitude }, TORONTO) <= COVERAGE_RADIUS_M,
+    );
+    if (pts.length === 0) return;
+    const lngs = pts.map((p) => p.longitude);
+    const lats = pts.map((p) => p.latitude);
+    mapRef.current?.fitBounds(
+      [
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+      ],
+      { padding: 80, maxZoom: 15, duration: 900 },
+    );
+  }, [mapReady, venues]);
+
+  // Keep ?place= and ?chain= in the URL so the view can be shared / survives reloads.
+  useEffect(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (selectedId) next.set("place", selectedId);
+        else next.delete("place");
+        if (filter.kind === "chain") next.set("chain", filter.slug);
+        else next.delete("chain");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [selectedId, filter, setSearchParams]);
 
   // Esc closes the panel.
   useEffect(() => {
@@ -176,8 +216,17 @@ function App() {
         <div className="pointer-events-auto md:w-[376px] md:shrink-0">
           <SearchBar onSelectRestaurant={handleSelectRestaurant} onSelectItem={handleSelectItem} />
         </div>
-        <div className="pointer-events-auto min-w-0 md:pt-2">
-          <FilterChips venues={venues} filter={filter} onChange={setFilter} />
+        <div className="pointer-events-auto flex min-w-0 gap-2 md:pt-2">
+          <Link
+            to="/restaurants"
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-medium text-[#1a73e8] shadow-[0_1px_3px_rgba(0,0,0,0.25)] hover:bg-gray-50"
+          >
+            <Icon name="restaurant" className="h-4 w-4" />
+            Menus
+          </Link>
+          <div className="min-w-0">
+            <FilterChips venues={venues} filter={filter} onChange={setFilter} />
+          </div>
         </div>
       </div>
 
@@ -221,4 +270,3 @@ function StatusChip({ children, tone }: { children: React.ReactNode; tone?: "err
   );
 }
 
-export default App;

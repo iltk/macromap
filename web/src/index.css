@@ -10,8 +10,7 @@
   body {
     font-family: Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden;
-    background: #e5e3df;
+    background: #f8f9fa;
   }
 }
 
