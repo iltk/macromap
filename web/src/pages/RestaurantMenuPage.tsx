@@ -82,6 +82,11 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
             <Icon name="place" className="h-4 w-4" />
             View on map
           </Link>
+          {menu.length > 0 && (
+            <Link to={`/build?r=${restaurant.slug}`} className={ui.btn}>
+              Build a meal
+            </Link>
+          )}
           {restaurant.website && (
             <a href={restaurant.website} target="_blank" rel="noreferrer" className={ui.btn}>
               Website

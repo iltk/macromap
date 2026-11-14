@@ -65,7 +65,7 @@ export function TrackerPage() {
             <DayLog date={date} entries={entries} />
           </div>
           <div className="min-w-0 space-y-5 lg:sticky lg:top-20 lg:self-start">
-            <PlanCard date={date} dayTotals={totals} targets={targets} />
+            <PlanCard />
             <p className="px-1 text-xs text-gray-500">Your log is saved in this browser only.</p>
           </div>
         </div>

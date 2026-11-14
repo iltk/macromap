@@ -18,7 +18,7 @@ export function Logo() {
 }
 
 const navCls = ({ isActive }: { isActive: boolean }) =>
-  `rounded-md px-2.5 py-1.5 text-sm ${
+  `rounded-md px-2 py-1.5 text-sm sm:px-2.5 ${
     isActive ? "bg-gray-100 font-semibold text-gray-900" : "text-gray-600 hover:text-gray-900"
   }`;
 
@@ -31,12 +31,15 @@ export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
     <header className="sticky top-0 z-40 shrink-0 border-b border-gray-200 bg-white">
       <div className={`mx-auto flex h-14 items-center gap-3 px-3 sm:px-5 ${fullWidth ? "" : "max-w-5xl"}`}>
         <Logo />
-        <nav className="flex items-center gap-1 sm:ml-2" aria-label="Main">
+        <nav className="flex items-center gap-0.5 sm:ml-2 sm:gap-1" aria-label="Main">
           <NavLink to="/" end className={navCls}>
             Map
           </NavLink>
           <NavLink to="/restaurants" className={navCls}>
-            Restaurants
+            Menus
+          </NavLink>
+          <NavLink to="/build" className={navCls}>
+            Build
           </NavLink>
           <NavLink to="/tracker" className={navCls}>
             Tracker
