@@ -7,6 +7,8 @@ import { RangeField } from "../components/restaurants/RangeField";
 import { RestaurantLogo } from "../components/restaurants/RestaurantLogo";
 import { Icon } from "../components/ui/icons";
 import { useApi } from "../hooks/useApi";
+import { ItemActions } from "../components/tray/ItemActions";
+import { toTrayItem } from "../stores/tray";
 import { CATEGORY_COLORS } from "../constants/categories";
 import type { MenuItem, RestaurantMenu } from "../types/venues";
 import { GOALS, fitsLimits, goalById, goalFor, hasLimits, NO_LIMITS, type MacroLimits } from "../utils/goals";
@@ -393,6 +395,8 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
                       key={item.id}
                       item={item}
                       maxima={maxima}
+                      restaurantName={restaurant.name}
+                      restaurantSlug={restaurant.slug}
                       highlighted={item.id === focusItemId}
                       labelRef={item.id === focusItemId ? (el) => { focusRef.current = el; } : undefined}
                     />
@@ -400,6 +404,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
                 </ul>
               ) : (
                 <MenuTable
+                  restaurant={restaurant}
                   items={visible}
                   sort={sort}
                   onSort={toggleSort}
@@ -430,12 +435,14 @@ const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
 ];
 
 function MenuTable({
+  restaurant,
   items,
   sort,
   onSort,
   focusItemId,
   focusRef,
 }: {
+  restaurant: RestaurantMenu;
   items: MenuItem[];
   sort: { key: SortKey; dir: SortDir };
   onSort: (k: SortKey) => void;
@@ -444,7 +451,7 @@ function MenuTable({
 }) {
   return (
     <div className="mt-4 overflow-x-auto rounded-xl border-2 border-gray-900 bg-white">
-      <table className="w-full min-w-[560px] text-sm">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b-4 border-gray-900 text-left">
             {COLUMNS.map((c) => {
@@ -467,6 +474,9 @@ function MenuTable({
                 </th>
               );
             })}
+            <th scope="col" className="px-3 py-2.5 text-right text-xs font-extrabold text-gray-500">
+              Add
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -492,6 +502,9 @@ function MenuTable({
                 <Num v={m.carbs} />
                 <Num v={m.fat} />
                 <Num v={d != null ? Number(d.toFixed(1)) : null} />
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <ItemActions item={toTrayItem(m, restaurant.name, restaurant.slug)} compact />
+                </td>
               </tr>
             );
           })}

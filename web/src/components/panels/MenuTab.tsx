@@ -3,6 +3,8 @@ import { Link } from "react-router";
 import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, macroSplit, needsCheck, proteinDensity } from "../../utils/macros";
 import { fitsLimits, type Goal } from "../../utils/goals";
+import { ItemActions } from "../tray/ItemActions";
+import { toTrayItem } from "../../stores/tray";
 import { Icon } from "../ui/icons";
 
 type SortKey = "menu" | "calories-asc" | "protein-desc" | "density-desc";
@@ -181,6 +183,7 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
                   item={item}
                   focused={item.id === focusItemId}
                   fits={goalActive && fitsLimits(item, goal.limits)}
+                  actions={<ItemActions item={toTrayItem(item, restaurantName, slug)} compact />}
                   rowRef={item.id === focusItemId ? focusRef : undefined}
                 />
               ))}
@@ -213,11 +216,13 @@ function MenuItemRow({
   item,
   focused,
   fits,
+  actions,
   rowRef,
 }: {
   item: MenuItem;
   focused: boolean;
   fits: boolean;
+  actions: React.ReactNode;
   rowRef?: React.Ref<HTMLLIElement>;
 }) {
   const split = macroSplit(item);
@@ -256,10 +261,11 @@ function MenuItemRow({
           )}
         </div>
       </div>
-      <div className="mt-2 flex gap-3 text-xs">
+      <div className="mt-2 flex items-center gap-3 text-xs">
         <Macro label="P" value={item.protein} color={MACRO_COLORS.protein} />
         <Macro label="C" value={item.carbs} color={MACRO_COLORS.carbs} />
         <Macro label="F" value={item.fat} color={MACRO_COLORS.fat} />
+        <span className="ml-auto">{actions}</span>
       </div>
       {split && (
         <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-gray-100">

@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router";
+import { TrayDock } from "./components/tray/TrayDock";
 import { MapPage } from "./pages/MapPage";
 import { RestaurantMenuPage } from "./pages/RestaurantMenuPage";
 import { RestaurantsPage } from "./pages/RestaurantsPage";
@@ -12,6 +13,7 @@ function App() {
         <Route path="/restaurants/:slug" element={<RestaurantMenuPage />} />
         <Route path="*" element={<MapPage />} />
       </Routes>
+      <TrayDock />
     </BrowserRouter>
   );
 }

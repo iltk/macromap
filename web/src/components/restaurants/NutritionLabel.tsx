@@ -2,6 +2,8 @@ import type { Ref } from "react";
 import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, needsCheck, proteinDensity } from "../../utils/macros";
 import { Icon } from "../ui/icons";
+import { ItemActions } from "../tray/ItemActions";
+import { toTrayItem } from "../../stores/tray";
 
 export interface MenuMaxima {
   protein: number;
@@ -13,11 +15,15 @@ export interface MenuMaxima {
 export function NutritionLabel({
   item,
   maxima,
+  restaurantName,
+  restaurantSlug,
   highlighted,
   labelRef,
 }: {
   item: MenuItem;
   maxima: MenuMaxima;
+  restaurantName: string;
+  restaurantSlug: string;
   highlighted?: boolean;
   labelRef?: Ref<HTMLLIElement>;
 }) {
@@ -62,6 +68,9 @@ export function NutritionLabel({
         <span className="font-bold text-gray-900 tabular-nums">
           {density != null ? `${density.toFixed(1)} g` : "–"}
         </span>
+      </div>
+      <div className="mt-3">
+        <ItemActions item={toTrayItem(item, restaurantName, restaurantSlug)} />
       </div>
     </li>
   );
