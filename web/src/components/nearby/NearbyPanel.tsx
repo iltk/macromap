@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useChainMenus } from "../../hooks/useChainMenus";
+import { useAvoidList } from "../../stores/allergens";
 import type { Coordinates, Venue } from "../../types/venues";
 import { distanceMeters, formatDistance } from "../../utils/geo";
 import type { Goal } from "../../utils/goals";
@@ -36,6 +37,7 @@ export function NearbyPanel({
   onClose: () => void;
 }) {
   const [sort, setSort] = useState<SortKey>("pick");
+  const avoid = useAvoidList();
 
   // nearest places, widening the radius until there are enough to choose from
   const nearby = useMemo(() => {
@@ -54,7 +56,7 @@ export function NearbyPanel({
       return {
         ...p,
         hasMenu: menu !== undefined && menu.length > 0,
-        pick: menu ? bestPick(menu, goal) : null,
+        pick: menu ? bestPick(menu, goal, avoid) : null,
         status: getOpenStatus(p.venue.openingHours, now),
       };
     });
@@ -66,7 +68,7 @@ export function NearbyPanel({
           (proteinDensity(a.pick ?? { protein: null, calories: null }) ?? 0) ||
         a.distance - b.distance,
     );
-  }, [nearby.places, menus, goal, now, sort]);
+  }, [nearby.places, menus, goal, avoid, now, sort]);
 
   return (
     <div className="flex h-full flex-col">
@@ -80,6 +82,7 @@ export function NearbyPanel({
             <p className="mt-0.5 text-xs text-gray-500">
               {rows.length} places within {formatDistance(nearby.radius)} ·{" "}
               {goal.id === "any" ? "best protein per calorie" : `best for ${goal.label.toLowerCase()} (${goal.rule})`}
+              {avoid.length > 0 && ` · avoiding ${avoid.length} allergen${avoid.length > 1 ? "s" : ""}`}
             </p>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1.5 text-gray-600 hover:bg-gray-100">
@@ -138,7 +141,9 @@ export function NearbyPanel({
                   ) : isLoading && !menus.has(venue.slug) ? (
                     <span className="text-xs text-gray-400">Checking the menu…</span>
                   ) : hasMenu ? (
-                    <span className="text-xs text-gray-500">Nothing on this menu fits your goal</span>
+                    <span className="text-xs text-gray-500">
+                      Nothing on this menu fits your goal{avoid.length > 0 && " and allergen filter"}
+                    </span>
                   ) : (
                     <span className="text-xs text-gray-400">No nutrition data yet</span>
                   )}

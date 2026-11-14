@@ -4,6 +4,10 @@ import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, macroSplit, needsCheck, proteinDensity } from "../../utils/macros";
 import { fitsLimits, type Goal } from "../../utils/goals";
 import { ItemActions } from "../tray/ItemActions";
+import { AllergenPicker } from "../restaurants/AllergenPicker";
+import { AllergenNotice } from "../restaurants/AllergenNotice";
+import { useAvoidList } from "../../stores/allergens";
+import { allergenLabel, allergenStatus } from "../../utils/allergens";
 import { toTrayItem } from "../../stores/tray";
 import { Icon } from "../ui/icons";
 
@@ -27,6 +31,8 @@ interface MenuTabProps {
 export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuTabProps) {
   const goalActive = goal.id !== "any";
   const [onlyFits, setOnlyFits] = useState(true);
+  const avoid = useAvoidList();
+  const [allergensOpen, setAllergensOpen] = useState(false);
   const [sort, setSort] = useState<SortKey>("menu");
   const [text, setText] = useState("");
   const maxCalories = useMemo(
@@ -47,7 +53,8 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
       (m) =>
         (calorieCap === null || (m.calories ?? 0) <= calorieCap) &&
         (!needle || m.name.toLowerCase().includes(needle)) &&
-        (!goalActive || !onlyFits || fitsLimits(m, goal.limits)),
+        (!goalActive || !onlyFits || fitsLimits(m, goal.limits)) &&
+        allergenStatus(m, avoid) === "ok",
     );
     const by = (f: (m: MenuItem) => number | null, dir: 1 | -1) =>
       [...filtered].sort((a, b) => {
@@ -67,7 +74,15 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
       default:
         return filtered;
     }
-  }, [menu, sort, text, calorieCap, goalActive, onlyFits, goal.limits]);
+  }, [menu, sort, text, calorieCap, goalActive, onlyFits, goal.limits, avoid]);
+  const allergenHidden = useMemo(() => {
+    const counts = { contains: 0, unknown: 0 };
+    for (const m of menu) {
+      const st = allergenStatus(m, avoid);
+      if (st !== "ok") counts[st]++;
+    }
+    return counts;
+  }, [menu, avoid]);
   const fitCount = useMemo(
     () => (goalActive ? menu.filter((m) => fitsLimits(m, goal.limits)).length : 0),
     [menu, goalActive, goal.limits],
@@ -158,6 +173,26 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
             </span>
           </label>
         )}
+        <div>
+          <button
+            type="button"
+            onClick={() => setAllergensOpen((o) => !o)}
+            aria-expanded={allergensOpen}
+            className="flex w-full items-center justify-between text-xs text-gray-700"
+          >
+            <span>
+              <span className="font-semibold">Allergens:</span>{" "}
+              {avoid.length ? `avoiding ${avoid.map(allergenLabel).join(", ").toLowerCase()}` : "no filter"}
+            </span>
+            <Icon name="chevronDown" className={`h-4 w-4 transition-transform ${allergensOpen ? "rotate-180" : ""}`} />
+          </button>
+          {allergensOpen && (
+            <div className="mt-2">
+              <AllergenPicker size="sm" />
+            </div>
+          )}
+          <AllergenNotice contains={allergenHidden.contains} unknown={allergenHidden.unknown} />
+        </div>
         <div className="flex items-center justify-between gap-2">
           <MacroLegend />
           <Link to={`/restaurants/${slug}${goalActive ? `?goal=${goal.id}` : ""}`} className="shrink-0 text-xs font-medium text-[#1a73e8] hover:underline">

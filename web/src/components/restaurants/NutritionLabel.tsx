@@ -3,6 +3,7 @@ import type { MenuItem } from "../../types/venues";
 import { MACRO_COLORS, needsCheck, proteinDensity } from "../../utils/macros";
 import { Icon } from "../ui/icons";
 import { ItemActions } from "../tray/ItemActions";
+import { allergenLabel } from "../../utils/allergens";
 import { toTrayItem } from "../../stores/tray";
 
 export interface MenuMaxima {
@@ -69,6 +70,12 @@ export function NutritionLabel({
           {density != null ? `${density.toFixed(1)} g` : "–"}
         </span>
       </div>
+      {item.allergens && (
+        <p className="mt-2 text-[11px] text-gray-600">
+          <span className="font-bold">Contains:</span>{" "}
+          {item.allergens.length ? item.allergens.map(allergenLabel).join(", ") : "none of the major allergens"}
+        </p>
+      )}
       <div className="mt-3">
         <ItemActions item={toTrayItem(item, restaurantName, restaurantSlug)} />
       </div>

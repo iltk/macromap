@@ -8,6 +8,10 @@ import { RestaurantLogo } from "../components/restaurants/RestaurantLogo";
 import { Icon } from "../components/ui/icons";
 import { useApi } from "../hooks/useApi";
 import { ItemActions } from "../components/tray/ItemActions";
+import { AllergenPicker } from "../components/restaurants/AllergenPicker";
+import { AllergenNotice } from "../components/restaurants/AllergenNotice";
+import { useAvoidList } from "../stores/allergens";
+import { allergenStatus } from "../utils/allergens";
 import { toTrayItem } from "../stores/tray";
 import { CATEGORY_COLORS } from "../constants/categories";
 import type { MenuItem, RestaurantMenu } from "../types/venues";
@@ -80,6 +84,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: "menu", dir: 1 });
   const [view, setView] = useState<View>("labels");
   const focusRef = useRef<HTMLElement | null>(null);
+  const avoid = useAvoidList();
   const { menu } = restaurant;
   const color = restaurant.brandColor ?? CATEGORY_COLORS[restaurant.category];
 
@@ -109,7 +114,8 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
       (m) =>
         (category === "all" || (m.menuCategory ?? "Other") === category) &&
         (!needle || m.name.toLowerCase().includes(needle)) &&
-        fitsLimits(m, limits),
+        fitsLimits(m, limits) &&
+        allergenStatus(m, avoid) === "ok",
     );
     if (sort.key === "menu") return list;
     if (sort.key === "name") return [...list].sort((a, b) => a.name.localeCompare(b.name) * sort.dir);
@@ -121,7 +127,19 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
       if (bv == null) return -1;
       return (av - bv) * sort.dir;
     });
-  }, [menu, text, category, limits, sort]);
+  }, [menu, text, category, limits, sort, avoid]);
+
+  // how many otherwise-matching items the allergen filter removed, and why
+  const allergenHidden = useMemo(() => {
+    const counts = { contains: 0, unknown: 0 };
+    if (avoid.length === 0) return counts;
+    for (const m of menu) {
+      if ((category !== "all" && (m.menuCategory ?? "Other") !== category) || !fitsLimits(m, limits)) continue;
+      const st = allergenStatus(m, avoid);
+      if (st !== "ok") counts[st]++;
+    }
+    return counts;
+  }, [menu, avoid, category, limits]);
 
   const bestPick = useMemo(() => {
     let best: MenuItem | null = null;
@@ -134,10 +152,11 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
   }, [menu]);
 
   const activeGoal = goalFor(limits);
-  const filtersActive = hasLimits(limits) || text.trim() !== "" || category !== "all";
+  const filtersActive = hasLimits(limits) || text.trim() !== "" || category !== "all" || avoid.length > 0;
   const activeCount =
     [limits.maxCalories, limits.minProtein, limits.maxCarbs].filter((v) => v !== null).length +
-    (category !== "all" ? 1 : 0);
+    (category !== "all" ? 1 : 0) +
+    avoid.length;
   const reset = () => {
     setLimits(NO_LIMITS);
     setText("");
@@ -206,6 +225,11 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
           step={5}
           unit="g"
         />
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-semibold tracking-[0.14em] text-gray-500 uppercase">Avoid allergens</p>
+        <AllergenPicker size="sm" />
       </div>
 
       <div>
@@ -361,6 +385,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
                 {activeGoal && activeGoal.id !== "any" && <> fit <span className="font-semibold">{activeGoal.label.toLowerCase()}</span></>}
                 {!activeGoal && " match your limits"}
               </p>
+              <AllergenNotice contains={allergenHidden.contains} unknown={allergenHidden.unknown} />
 
               {bestPick && !filtersActive && sort.key === "menu" && (
                 <div className="mt-4 flex flex-col gap-3 rounded-xl bg-gray-900 px-5 py-4 text-white sm:flex-row sm:items-center sm:justify-between">
