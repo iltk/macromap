@@ -4,6 +4,7 @@ import { SiteHeader } from "../components/layout/SiteHeader";
 import { DayLog } from "../components/tracker/DayLog";
 import { DaySummary } from "../components/tracker/DaySummary";
 import { PlanCard } from "../components/tracker/PlanCard";
+import { Suggestions } from "../components/tracker/Suggestions";
 import { Icon } from "../components/ui/icons";
 import { ui } from "../components/ui/styles";
 import { totalsOf, useTracker } from "../stores/tracker";
@@ -60,6 +61,7 @@ export function TrackerPage() {
         <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="min-w-0 space-y-5">
             <DaySummary totals={totals} targets={targets} isToday={date === today} />
+            {date === today && targets && <Suggestions totals={totals} targets={targets} />}
             <DayLog date={date} entries={entries} />
           </div>
           <div className="min-w-0 space-y-5 lg:sticky lg:top-20 lg:self-start">

@@ -116,3 +116,45 @@ export interface RestaurantMenu {
   locationCount: number;
   menu: MenuItem[];
 }
+
+/** Mirrors api SuggestionResponse. */
+export interface SuggestionRestaurant {
+  restaurantId: number;
+  slug: string;
+  name: string;
+  category: VenueCategory;
+  brandColor: string | null;
+  logoUrl: string | null;
+}
+
+export interface SuggestionLocation {
+  locationId: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  distanceMeters: number;
+  openingHours: string | null;
+}
+
+export interface ItemSuggestion {
+  item: MenuItem;
+  restaurant: SuggestionRestaurant;
+  score: number;
+  locations: SuggestionLocation[];
+}
+
+export interface ComboSuggestion {
+  items: MenuItem[];
+  restaurant: SuggestionRestaurant;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  score: number;
+  locations: SuggestionLocation[];
+}
+
+export interface SuggestionResponse {
+  items: ItemSuggestion[];
+  combos: ComboSuggestion[];
+}

@@ -4,6 +4,7 @@ import type {
   RestaurantMenu,
   RestaurantSummary,
   SearchResponse,
+  SuggestionResponse,
   Venue,
   VenueCategory,
 } from "../types/venues";
@@ -64,4 +65,37 @@ export function fetchRestaurantMenu(slug: string, signal?: AbortSignal): Promise
   return getJson<RestaurantMenu>(`/api/restaurants/${encodeURIComponent(slug)}`, signal).then(
     (r) => ({ ...r, category: normalizeCategory(r.category) }),
   );
+}
+
+export interface SuggestionParams {
+  calories: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  avoid?: string[];
+  lat?: number;
+  lng?: number;
+  restaurant?: string;
+  limit?: number;
+}
+
+/** Turns params into a stable query string (also used as a cache key). */
+export function suggestionQuery(p: SuggestionParams): string {
+  const q = new URLSearchParams();
+  q.set("calories", String(Math.round(p.calories)));
+  if (p.protein != null) q.set("protein", String(Math.round(p.protein)));
+  if (p.carbs != null) q.set("carbs", String(Math.round(p.carbs)));
+  if (p.fat != null) q.set("fat", String(Math.round(p.fat)));
+  if (p.avoid?.length) q.set("avoid", [...p.avoid].sort().join(","));
+  if (p.lat != null && p.lng != null) {
+    q.set("lat", p.lat.toFixed(3)); // ~100 m: enough precision, and fewer refetches while walking
+    q.set("lng", p.lng.toFixed(3));
+  }
+  if (p.restaurant) q.set("restaurant", p.restaurant);
+  if (p.limit) q.set("limit", String(p.limit));
+  return q.toString();
+}
+
+export function fetchSuggestions(query: string, signal?: AbortSignal): Promise<SuggestionResponse> {
+  return getJson<SuggestionResponse>(`/api/suggestions?${query}`, signal);
 }
