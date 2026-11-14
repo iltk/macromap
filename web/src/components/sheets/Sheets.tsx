@@ -19,6 +19,7 @@ import { ALLERGENS } from "../../utils/allergens";
 import { GOALS, NO_LIMITS, goalFor } from "../../utils/goals";
 import { MACRO_COLORS, proteinDensity } from "../../utils/macros";
 import { RangeField } from "../restaurants/RangeField";
+import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 
@@ -213,6 +214,7 @@ function MealSheet() {
       <ul className="flex-1 divide-y divide-gray-200 overflow-y-auto">
         {meal.map(({ item, qty }) => (
           <li key={item.id} className="flex items-center gap-3 px-5 py-3">
+            <FoodImage src={item.imageUrl} alt={item.name} tintKey={item.restaurantSlug} variant="thumb" className="h-11 w-11 shrink-0 rounded-md border border-gray-200" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
               <p className="text-xs text-gray-500">

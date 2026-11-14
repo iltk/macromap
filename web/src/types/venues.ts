@@ -17,6 +17,8 @@ export interface Venue {
 export interface MenuItem {
   id: string;
   name: string;
+  /** Short description for menu cards; null when not entered. */
+  description: string | null;
   menuCategory: string | null;
   servingSize: string | null;
   calories: number | null;
@@ -24,6 +26,8 @@ export interface MenuItem {
   carbs: number | null;
   fat: number | null;
   source: string | null;
+  /** Photo URL or app path; null = show a placeholder. */
+  imageUrl: string | null;
   /** Allergen codes; null = unknown (no data), [] = verified none. */
   allergens: string[] | null;
 }
@@ -36,6 +40,7 @@ export interface LocationDetails {
   name: string;
   category: VenueCategory;
   brandColor: string | null;
+  logoUrl: string | null;
   website: string | null;
   address: string;
   city: string | null;
@@ -62,6 +67,7 @@ export interface MenuItemHit {
   name: string;
   calories: number | null;
   protein: number | null;
+  imageUrl: string | null;
 }
 
 export interface SearchResponse {
@@ -88,6 +94,7 @@ export interface RestaurantSummary {
   category: VenueCategory;
   description: string | null;
   brandColor: string | null;
+  logoUrl: string | null;
   locationCount: number;
   menuItemCount: number;
   lightestCalories: number | null;
@@ -104,6 +111,7 @@ export interface RestaurantMenu {
   category: VenueCategory;
   description: string | null;
   brandColor: string | null;
+  logoUrl: string | null;
   website: string | null;
   locationCount: number;
   menu: MenuItem[];

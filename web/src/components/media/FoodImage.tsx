@@ -1,0 +1,68 @@
+import { useState } from "react";
+import { Icon } from "../ui/icons";
+
+// Soft, warm tints so a menu full of placeholders still has some rhythm.
+const TINTS = ["#efe6d6", "#e4eadf", "#ede2dd", "#e1e7eb", "#ebe6d2", "#e6e1ea"];
+
+function tintFor(key: string) {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
+  return TINTS[Math.abs(h) % TINTS.length];
+}
+
+/**
+ * A menu item photo, shown whole ("contain") so cut-out product shots sit centred on white.
+ * Falls back to a placeholder when there's no image yet or it fails to load:
+ * - "card": a tinted plate in the middle of a white photo area
+ * - "thumb": a small tinted square
+ * The parent sets the size.
+ */
+export function FoodImage({
+  src,
+  alt,
+  tintKey,
+  variant,
+  className = "",
+}: {
+  src: string | null | undefined;
+  alt: string;
+  /** e.g. the menu section, so items in one section share a tint */
+  tintKey: string;
+  variant: "card" | "thumb";
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const tint = tintFor(tintKey);
+
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+        className={`bg-white object-contain ${variant === "card" ? "p-4" : "p-1"} ${className}`}
+      />
+    );
+  }
+
+  if (variant === "thumb") {
+    return (
+      <div role="img" aria-label={`${alt} (photo coming soon)`} className={`relative flex items-center justify-center overflow-hidden ${className}`} style={{ background: tint }}>
+        <span className="absolute inset-0 hidden bg-gray-100/70 dark:block" />
+        <Icon name="restaurant" className="relative h-4 w-4 text-black/25 dark:text-white/30" />
+      </div>
+    );
+  }
+
+  return (
+    <div role="img" aria-label={`${alt} (photo coming soon)`} className={`flex items-center justify-center bg-white ${className}`}>
+      <div className="relative flex aspect-square w-[42%] items-center justify-center overflow-hidden rounded-full" style={{ background: tint }}>
+        <span className="absolute inset-0 hidden bg-gray-100/70 dark:block" />
+        <Icon name="restaurant" className="relative h-1/3 w-1/3 text-black/20 dark:text-white/25" />
+      </div>
+    </div>
+  );
+}

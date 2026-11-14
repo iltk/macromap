@@ -117,13 +117,17 @@ export function RestaurantsPage() {
               </button>
             </div>
           ) : isLoading && !restaurants ? (
-            <div className="h-64 animate-pulse rounded-lg border border-gray-200 bg-white" />
+            <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <li key={i} className="aspect-[4/5] animate-pulse rounded-xl border border-gray-200 bg-white" />
+              ))}
+            </ul>
           ) : visible.length === 0 ? (
             <p className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">No restaurants match “{query.trim()}”.</p>
           ) : (
-            <ul className={`divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white ${isLoading ? "opacity-70" : ""}`}>
+            <ul className={`grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 ${isLoading ? "opacity-70" : ""}`}>
               {visible.map((r) => (
-                <RestaurantRow key={r.slug} r={r} goalActive={prefs.goalActive} />
+                <RestaurantTile key={r.slug} r={r} goalActive={prefs.goalActive} />
               ))}
             </ul>
           )}
@@ -133,33 +137,38 @@ export function RestaurantsPage() {
   );
 }
 
-function RestaurantRow({ r, goalActive }: { r: RestaurantSummary; goalActive: boolean }) {
+function RestaurantTile({ r, goalActive }: { r: RestaurantSummary; goalActive: boolean }) {
   const hasMenu = r.menuItemCount > 0;
   return (
     <li>
-      <Link to={`/restaurants/${r.slug}`} className="flex items-center gap-4 px-4 py-3.5 hover:bg-row-hover">
-        <RestaurantLogo name={r.name} brandColor={r.brandColor} category={r.category} />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold text-gray-900">{r.name}</span>
-          <span className="block truncate text-sm text-gray-600">{r.description ?? "Restaurant"}</span>
+      <Link
+        to={`/restaurants/${r.slug}`}
+        className="group flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-400 sm:p-5"
+      >
+        <span className="flex justify-center py-3 sm:py-5">
+          <RestaurantLogo name={r.name} brandColor={r.brandColor} category={r.category} logoUrl={r.logoUrl} size="xl" />
         </span>
-        <span className="hidden shrink-0 text-right text-sm sm:block">
-          {hasMenu ? (
-            goalActive ? (
-              <span className="block text-gray-900 tabular-nums">
-                <span className={`font-semibold ${r.matchingItems > 0 ? "text-accent-ink" : ""}`}>{r.matchingItems}</span> of {r.menuItemCount} fit
-              </span>
-            ) : (
-              <span className="block text-gray-900 tabular-nums">{r.menuItemCount} items</span>
-            )
-          ) : (
-            <span className="block text-gray-500">No nutrition info yet</span>
-          )}
-          <span className="block text-xs text-gray-500 tabular-nums">
-            {r.locationCount} {r.locationCount === 1 ? "location" : "locations"}
+        <span className="mt-1 block text-center font-semibold text-gray-900 group-hover:underline">{r.name}</span>
+        <span className="mt-1 line-clamp-2 min-h-[2.5rem] text-center text-sm leading-5 text-gray-500">{r.description ?? "Restaurant"}</span>
+        <span className="mt-auto pt-4">
+          <span className="block border-t border-gray-100 pt-3 text-center text-xs leading-5 tabular-nums">
+            <span className="block text-gray-700">
+              {!hasMenu ? (
+                <span className="text-gray-400">No nutrition info yet</span>
+              ) : goalActive ? (
+                <>
+                  <span className={`font-semibold ${r.matchingItems > 0 ? "text-accent-ink" : "text-gray-900"}`}>{r.matchingItems}</span> of{" "}
+                  {r.menuItemCount} items fit
+                </>
+              ) : (
+                <>{r.menuItemCount} menu items</>
+              )}
+            </span>
+            <span className="block text-gray-500">
+              {r.locationCount} {r.locationCount === 1 ? "location" : "locations"}
+            </span>
           </span>
         </span>
-        <Icon name="chevronRight" className="h-5 w-5 shrink-0 text-gray-400" />
       </Link>
     </li>
   );

@@ -86,7 +86,7 @@ function Loaded({ details, userPosition, tab, onTabChange, focusItemId, scrollTo
     <>
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start gap-3">
-          <RestaurantLogo name={details.name} brandColor={details.brandColor} category={details.category} />
+          <RestaurantLogo name={details.name} brandColor={details.brandColor} category={details.category} logoUrl={details.logoUrl} />
           <div className="min-w-0">
             <h2 className="text-lg leading-tight font-bold text-gray-900">{details.name}</h2>
             <p className="mt-0.5 text-sm text-gray-600">

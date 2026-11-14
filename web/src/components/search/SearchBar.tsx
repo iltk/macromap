@@ -4,6 +4,7 @@ import { CATEGORY_COLORS } from "../../constants/categories";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import type { MenuItemHit, RestaurantHit, SearchResponse } from "../../types/venues";
 import { Icon } from "../ui/icons";
+import { FoodImage } from "../media/FoodImage";
 import { clearRecents, useRecentPlaces, useSavedPlaces, type PlaceRef } from "../../stores/places";
 
 interface SearchBarProps {
@@ -219,9 +220,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
                 </>
               ) : (
                 <>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-600">
-                    <Icon name="restaurant" className="h-4 w-4" />
-                  </span>
+                  <FoodImage src={opt.hit.imageUrl} alt={opt.hit.name} tintKey={opt.hit.restaurantSlug} variant="thumb" className="h-8 w-8 shrink-0 rounded-md" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm text-gray-900">{opt.hit.name}</span>
                     <span className="block truncate text-xs text-gray-500">

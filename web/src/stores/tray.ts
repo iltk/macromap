@@ -10,6 +10,7 @@ export interface TrayItem {
   restaurantName: string;
   restaurantSlug: string;
   servingSize: string | null;
+  imageUrl: string | null;
   calories: number | null;
   protein: number | null;
   carbs: number | null;
@@ -48,6 +49,7 @@ export const toTrayItem = (m: MenuItem, restaurantName: string, restaurantSlug: 
   restaurantName,
   restaurantSlug,
   servingSize: m.servingSize,
+  imageUrl: m.imageUrl,
   calories: m.calories,
   protein: m.protein,
   carbs: m.carbs,

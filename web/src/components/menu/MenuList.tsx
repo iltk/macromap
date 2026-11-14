@@ -5,6 +5,8 @@ import { allergenLabel } from "../../utils/allergens";
 import { needsCheck, proteinDensity } from "../../utils/macros";
 import { sectionOf, type MenuSort } from "../../utils/menuQuery";
 import { ItemActions } from "../tray/ItemActions";
+import { FoodImage } from "../media/FoodImage";
+import { MenuCard } from "./MenuCard";
 import { Icon } from "../ui/icons";
 
 interface Props {
@@ -13,8 +15,8 @@ interface Props {
   restaurantName: string;
   restaurantSlug: string;
   focusItemId: string | null;
-  /** "compact" for the narrow map panel, "table" for the full menu page. */
-  layout: "compact" | "table";
+  /** "compact" for the narrow map panel; "cards" (photo grid) or "table" on the menu page. */
+  layout: "compact" | "cards" | "table";
   onSort?: (sort: MenuSort) => void;
   /** Scroll the focused item into view (off when the item was just highlighted from a list). */
   scrollToFocus?: boolean;
@@ -58,7 +60,9 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
             {g.title && <h4 className="bg-gray-50 px-4 py-1.5 text-xs font-semibold text-gray-600">{g.title}</h4>}
             <ul className="divide-y divide-gray-200">
               {g.items.map((m) => (
-                <li key={m.id} ref={refFor(m.id)} className={`px-4 py-3 ${m.id === focusItemId ? "bg-accent-soft" : ""}`}>
+                <li key={m.id} ref={refFor(m.id)} className={`flex gap-3 px-4 py-3 ${m.id === focusItemId ? "bg-accent-soft" : ""}`}>
+                  <FoodImage src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-14 w-14 shrink-0 rounded-md border border-gray-200" />
+                  <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="text-sm font-medium text-gray-900">
                       {m.name}
@@ -75,7 +79,32 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
                   <div className="mt-1.5 -ml-2">
                     <ItemActions item={toTrayItem(m, restaurantName, restaurantSlug)} />
                   </div>
+                  </div>
                 </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    );
+  }
+
+  if (layout === "cards") {
+    return (
+      <div className="space-y-6">
+        {groups.map((g) => (
+          <section key={g.title ?? "all"}>
+            {g.title && <h3 className="mb-3 text-base font-semibold text-gray-900">{g.title}</h3>}
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {g.items.map((m) => (
+                <MenuCard
+                  key={m.id}
+                  item={m}
+                  restaurantName={restaurantName}
+                  restaurantSlug={restaurantSlug}
+                  highlighted={m.id === focusItemId}
+                  cardRef={refFor(m.id)}
+                />
               ))}
             </ul>
           </section>
@@ -123,13 +152,18 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
               const d = proteinDensity(m);
               return (
                 <tr key={m.id} ref={refFor(m.id)} className={m.id === focusItemId ? "bg-accent-soft" : "hover:bg-row-hover"}>
-                  <td className="px-3 py-2.5">
+                  <td className="px-3 py-2">
+                    <span className="flex items-center gap-3">
+                    <FoodImage src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-10 w-10 shrink-0 rounded border border-gray-200" />
+                    <span className="min-w-0">
                     <span className="font-medium text-gray-900">
                       {m.name}
                       {needsCheck(m) && <Warning />}
                     </span>
                     <span className="block text-xs text-gray-500">
                       {[m.servingSize, contains(m)].filter(Boolean).join(" · ")}
+                    </span>
+                    </span>
                     </span>
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-right text-gray-900 tabular-nums">{m.calories ?? "–"}</td>

@@ -55,6 +55,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
   const prefs = usePrefs();
   const [query, setQuery] = useState<MenuQuery>(DEFAULT_QUERY);
   const [focusItemId, setFocusItemId] = useState<string | null>(() => searchParams.get("item"));
+  const [view, setView] = useState<"cards" | "table">("cards");
   const { menu } = restaurant;
 
   const result = useMemo(
@@ -67,7 +68,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
     <>
       <header className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">
-          <RestaurantLogo name={restaurant.name} brandColor={restaurant.brandColor} category={restaurant.category} size="lg" />
+          <RestaurantLogo name={restaurant.name} brandColor={restaurant.brandColor} category={restaurant.category} logoUrl={restaurant.logoUrl} size="lg" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{restaurant.name}</h1>
             {restaurant.description && <p className="mt-0.5 text-gray-600">{restaurant.description}</p>}
@@ -113,7 +114,25 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
           </div>
 
           <div className="min-w-0 space-y-3">
-            {pick && prefs.goalActive && <TopPick item={pick} forGoal={prefs.goalName} onShow={() => setFocusItemId(pick.id)} />}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                {pick && prefs.goalActive && <TopPick item={pick} forGoal={prefs.goalName} onShow={() => setFocusItemId(pick.id)} />}
+              </div>
+              <div className="inline-flex shrink-0 rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="View">
+                {(["cards", "table"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="radio"
+                    aria-checked={view === v}
+                    onClick={() => setView(v)}
+                    className={`rounded px-3 py-1 text-sm capitalize ${view === v ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
             {result.items.length === 0 ? (
               <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
                 Nothing on this menu matches. Try another section or clear the search.
@@ -126,7 +145,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
                 restaurantName={restaurant.name}
                 restaurantSlug={restaurant.slug}
                 focusItemId={focusItemId}
-                layout="table"
+                layout={view}
               />
             )}
             <p className="text-xs text-gray-500">
