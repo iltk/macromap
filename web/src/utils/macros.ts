@@ -1,4 +1,5 @@
 import type { MenuItem } from "../types/venues";
+import { fitsLimits, type Goal } from "./goals";
 
 export const MACRO_COLORS = {
   protein: "#1a73e8",
@@ -24,3 +25,18 @@ export function proteinDensity(item: Pick<MenuItem, "protein" | "calories">): nu
 
 export const needsCheck = (item: Pick<MenuItem, "source">) =>
   Boolean(item.source?.toLowerCase().includes("needs check"));
+
+/** Best item on a menu for a goal: most protein per calorie among items that fit (and have trustworthy numbers). */
+export function bestPick(menu: MenuItem[], goal: Goal): MenuItem | null {
+  let best: MenuItem | null = null;
+  let bestScore = -1;
+  for (const m of menu) {
+    if (needsCheck(m) || !fitsLimits(m, goal.limits)) continue;
+    const score = proteinDensity(m) ?? -1;
+    if (score > bestScore) {
+      best = m;
+      bestScore = score;
+    }
+  }
+  return best;
+}

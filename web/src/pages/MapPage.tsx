@@ -7,6 +7,8 @@ import { HAS_MAP_KEY } from "../components/map/mapStyles";
 import { VenueDetailsPanel, type PanelTab } from "../components/panels/VenueDetailsPanel";
 import { FilterChips } from "../components/search/FilterChips";
 import { GoalChip } from "../components/search/GoalChip";
+import { NearbyPanel, type NearbyPick } from "../components/nearby/NearbyPanel";
+import { Icon } from "../components/ui/icons";
 import { fetchRestaurants } from "../api/venues";
 import { useApi } from "../hooks/useApi";
 import { goalById, limitsToQuery } from "../utils/goals";
@@ -47,6 +49,8 @@ export function MapPage() {
   });
   const [mapReady, setMapReady] = useState(false);
   const [openNow, setOpenNow] = useState(false);
+  // "Best near me" list: origin is fixed when the list is opened
+  const [nearbyOrigin, setNearbyOrigin] = useState<{ at: Coordinates; isUser: boolean } | null>(null);
   const [goal, setGoal] = useState(() => goalById(searchParams.get("goal")));
   const goalQuery = limitsToQuery(goal.limits);
   const goalStats = useApi(
@@ -204,6 +208,15 @@ export function MapPage() {
     if (target) selectLocation(target.locationId);
   };
 
+  const openNearby = () => {
+    const userInside = userPosition && distanceMeters(userPosition, TORONTO) <= COVERAGE_RADIUS_M;
+    setNearbyOrigin({ at: searchOrigin(), isUser: Boolean(userInside) });
+    selectLocation(null);
+  };
+
+  const handleNearbyPick = (pick: NearbyPick) =>
+    selectLocation(pick.locationId, pick.itemId ? { tab: "menu", focusItemId: pick.itemId } : {});
+
   const handleSelectPlace = (place: PlaceRef) => {
     if (venues.some((v) => v.locationId === place.locationId)) selectLocation(place.locationId);
     else {
@@ -242,6 +255,7 @@ export function MapPage() {
   const outsideCoverage =
     userPosition !== null && distanceMeters(userPosition, TORONTO) > COVERAGE_RADIUS_M;
   const panelOpen = selectedId !== null;
+  const nearbyOpen = nearbyOrigin !== null && !panelOpen;
 
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden">
@@ -253,7 +267,7 @@ export function MapPage() {
           userPosition={userPosition}
           venues={visibleVenues}
           selectedVenue={selectedVenue}
-          panelOpen={panelOpen}
+          panelOpen={panelOpen || nearbyOpen}
           fitsBySlug={fitsBySlug}
           onSelectVenue={(id) => selectLocation(id)}
           onReady={() => setMapReady(true)}
@@ -281,6 +295,17 @@ export function MapPage() {
               onOpenNowChange={setOpenNow}
             >
               <GoalChip goal={goal} onChange={setGoal} />
+              <button
+                type="button"
+                onClick={() => (nearbyOrigin ? setNearbyOrigin(null) : openNearby())}
+                aria-pressed={nearbyOrigin !== null}
+                className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.25)] ${
+                  nearbyOrigin ? "bg-[#fef7e0] text-[#b06000]" : "bg-white text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                <Icon name="trophy" className="h-4 w-4 text-[#f9ab00]" />
+                Best near me
+              </button>
             </FilterChips>
           </div>
         </div>
@@ -301,17 +326,34 @@ export function MapPage() {
           onCopy={copy}
         />
 
+        {nearbyOpen && nearbyOrigin && (
+          <aside
+            aria-label="Best near me"
+            className="absolute inset-x-0 bottom-0 z-20 h-[62%] overflow-hidden rounded-t-2xl bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] md:inset-y-0 md:right-auto md:left-0 md:h-auto md:w-[408px] md:rounded-none md:pt-[72px]"
+          >
+            <NearbyPanel
+              venues={visibleVenues}
+              origin={nearbyOrigin.at}
+              originIsUser={nearbyOrigin.isUser}
+              goal={goal}
+              now={now}
+              onPick={handleNearbyPick}
+              onClose={() => setNearbyOrigin(null)}
+            />
+          </aside>
+        )}
+
         {/* status chips */}
         <div className="pointer-events-none absolute top-[112px] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 md:top-20">
           {venuesLoading && <StatusChip>Loading restaurants…</StatusChip>}
           {!HAS_MAP_KEY && <StatusChip tone="error">Missing VITE_MAPTILER_KEY in web/.env.local</StatusChip>}
           {outsideCoverage && !panelOpen && <StatusChip>MacroMap covers Toronto for now</StatusChip>}
-          {fitsBySlug && !panelOpen && (
+          {fitsBySlug && !panelOpen && !nearbyOpen && (
             <StatusChip>
               Highlighting places with “{goal.label.toLowerCase()}” options ({goal.rule})
             </StatusChip>
           )}
-          {openNow && !panelOpen && (
+          {openNow && !panelOpen && !nearbyOpen && (
             <StatusChip>
               {visibleVenues.length} open now
               {unknownHoursCount > 0 && ` · ${unknownHoursCount} hidden (hours unknown)`}
