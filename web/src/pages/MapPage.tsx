@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
+import { SiteHeader } from "../components/layout/SiteHeader";
 import type { MapRef } from "react-map-gl/maplibre";
 import { MapContainer } from "../components/map/MapContainer";
 import { HAS_MAP_KEY } from "../components/map/mapStyles";
@@ -7,7 +8,6 @@ import { VenueDetailsPanel, type PanelTab } from "../components/panels/VenueDeta
 import { FilterChips } from "../components/search/FilterChips";
 import { SearchBar } from "../components/search/SearchBar";
 import { Toast } from "../components/ui/Toast";
-import { Icon } from "../components/ui/icons";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationDetails } from "../hooks/useLocationDetails";
 import { useToast } from "../hooks/useToast";
@@ -19,11 +19,11 @@ import { TORONTO, distanceMeters, nearest } from "../utils/geo";
 const COVERAGE_RADIUS_M = 60_000;
 const PANEL_WIDTH = 408;
 
-function panelPadding() {
+function panelPadding(mapHeight: number) {
   const desktop = window.matchMedia("(min-width: 768px)").matches;
   return desktop
     ? { left: PANEL_WIDTH, top: 0, right: 0, bottom: 0 }
-    : { left: 0, top: 0, right: 0, bottom: Math.round(window.innerHeight * 0.62) };
+    : { left: 0, top: 0, right: 0, bottom: Math.round(mapHeight * 0.62) };
 }
 
 export function MapPage() {
@@ -71,7 +71,7 @@ export function MapPage() {
     map.flyTo({
       center: [lng, lat],
       zoom: Math.max(map.getZoom(), zoom),
-      padding: panelPadding(),
+      padding: panelPadding(map.getContainer().clientHeight),
       duration: 900,
       essential: true,
     });
@@ -196,60 +196,56 @@ export function MapPage() {
   const panelOpen = selectedId !== null;
 
   return (
-    <div className="relative h-dvh w-screen overflow-hidden">
-      <MapContainer
-        mapRef={mapRef}
-        userPosition={userPosition}
-        venues={visibleVenues}
-        selectedVenue={selectedVenue}
-        panelOpen={panelOpen}
-        onSelectVenue={(id) => selectLocation(id)}
-        onReady={() => setMapReady(true)}
-        onLocateMe={() =>
-          userPosition &&
-          mapRef.current?.flyTo({ center: [userPosition.lng, userPosition.lat], zoom: 15, duration: 900 })
-        }
-      />
+    <div className="flex h-dvh w-screen flex-col overflow-hidden">
+      <SiteHeader fullWidth />
+      {/* everything below positions itself inside the map area, under the header */}
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <MapContainer
+          mapRef={mapRef}
+          userPosition={userPosition}
+          venues={visibleVenues}
+          selectedVenue={selectedVenue}
+          panelOpen={panelOpen}
+          onSelectVenue={(id) => selectLocation(id)}
+          onReady={() => setMapReady(true)}
+          onLocateMe={() =>
+            userPosition &&
+            mapRef.current?.flyTo({ center: [userPosition.lng, userPosition.lat], zoom: 15, duration: 900 })
+          }
+        />
 
-      {/* search: floats over the map (and over the panel on desktop, like Google Maps) */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-2 p-3 md:flex-row md:items-start md:gap-4 md:px-4">
-        <div className="pointer-events-auto md:w-[376px] md:shrink-0">
-          <SearchBar onSelectRestaurant={handleSelectRestaurant} onSelectItem={handleSelectItem} />
-        </div>
-        <div className="pointer-events-auto flex min-w-0 gap-2 md:pt-2">
-          <Link
-            to="/restaurants"
-            className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-medium text-[#1a73e8] shadow-[0_1px_3px_rgba(0,0,0,0.25)] hover:bg-gray-50"
-          >
-            <Icon name="restaurant" className="h-4 w-4" />
-            Menus
-          </Link>
-          <div className="min-w-0">
+        {/* search: floats over the map (and over the panel on desktop, like Google Maps) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-2 p-3 md:flex-row md:items-start md:gap-4 md:px-4">
+          <div className="pointer-events-auto md:w-[376px] md:shrink-0">
+            <SearchBar onSelectRestaurant={handleSelectRestaurant} onSelectItem={handleSelectItem} />
+          </div>
+          <div className="pointer-events-auto min-w-0 md:pt-2">
             <FilterChips venues={venues} filter={filter} onChange={setFilter} />
           </div>
         </div>
-      </div>
 
-      <VenueDetailsPanel
-        open={panelOpen}
-        details={details}
-        isLoading={isLoading}
-        error={error}
-        onRetry={retry}
-        onClose={() => selectLocation(null)}
-        userPosition={userPosition}
-        tab={tab}
-        onTabChange={setTab}
-        focusItemId={focusItemId}
-        onShare={handleShare}
-        onCopy={copy}
-      />
+        <VenueDetailsPanel
+          open={panelOpen}
+          details={details}
+          isLoading={isLoading}
+          error={error}
+          onRetry={retry}
+          onClose={() => selectLocation(null)}
+          userPosition={userPosition}
+          tab={tab}
+          onTabChange={setTab}
+          focusItemId={focusItemId}
+          onShare={handleShare}
+          onCopy={copy}
+        />
 
-      {/* status chips */}
-      <div className="pointer-events-none absolute top-[112px] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 md:top-20">
-        {venuesLoading && <StatusChip>Loading restaurants…</StatusChip>}
-        {!HAS_MAP_KEY && <StatusChip tone="error">Missing VITE_MAPTILER_KEY in web/.env.local</StatusChip>}
-        {outsideCoverage && !panelOpen && <StatusChip>MacroMap covers Toronto for now</StatusChip>}
+        {/* status chips */}
+        <div className="pointer-events-none absolute top-[112px] left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 md:top-20">
+          {venuesLoading && <StatusChip>Loading restaurants…</StatusChip>}
+          {!HAS_MAP_KEY && <StatusChip tone="error">Missing VITE_MAPTILER_KEY in web/.env.local</StatusChip>}
+          {outsideCoverage && !panelOpen && <StatusChip>MacroMap covers Toronto for now</StatusChip>}
+        </div>
+
       </div>
 
       <Toast message={venuesError ? "Couldn't load restaurants. Is the API running?" : null} tone="error" />

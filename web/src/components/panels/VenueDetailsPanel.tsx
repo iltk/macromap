@@ -30,8 +30,8 @@ export function VenueDetailsPanel(props: VenueDetailsPanelProps) {
     <aside
       aria-label="Place details"
       aria-hidden={!open}
-      className={`fixed z-20 flex flex-col overflow-hidden bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-out
-        inset-x-0 bottom-0 h-[62vh] rounded-t-2xl
+      className={`absolute z-20 flex flex-col overflow-hidden bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-out
+        inset-x-0 bottom-0 h-[62%] rounded-t-2xl
         md:inset-y-0 md:pt-[72px] md:right-auto md:left-0 md:h-auto md:w-[408px] md:rounded-none
         ${open ? "translate-y-0 md:translate-x-0" : "translate-y-full md:translate-y-0 md:-translate-x-full"}`}
     >

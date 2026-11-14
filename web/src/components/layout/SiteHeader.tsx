@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 import { Icon } from "../ui/icons";
 
 export function Logo({ className = "" }: { className?: string }) {
@@ -26,10 +26,15 @@ const navCls = ({ isActive }: { isActive: boolean }) =>
       : "border-transparent text-gray-700 hover:text-gray-900"
   }`;
 
-export function SiteHeader() {
+export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
+  const onMap = useLocation().pathname === "/";
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200/70 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 shrink-0 border-b border-gray-200/70 bg-white/90 backdrop-blur">
+      <div
+        className={`mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6 ${
+          fullWidth ? "" : "max-w-6xl"
+        }`}
+      >
         <Logo />
         <nav className="flex items-center gap-6">
           <NavLink to="/restaurants" end={false} className={navCls}>
@@ -40,11 +45,11 @@ export function SiteHeader() {
           </NavLink>
         </nav>
         <Link
-          to="/"
+          to={onMap ? "/restaurants" : "/"}
           className="hidden items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 sm:flex"
         >
-          <Icon name="place" className="h-4 w-4 text-[#ea4335]" />
-          Find near me
+          <Icon name={onMap ? "restaurant" : "place"} className="h-4 w-4 text-[#ea4335]" />
+          {onMap ? "Browse menus" : "Find near me"}
         </Link>
       </div>
     </header>
