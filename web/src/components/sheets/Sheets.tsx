@@ -2,24 +2,13 @@ import { useEffect } from "react";
 import { setThemePref, useThemePref, type ThemePref } from "../../stores/theme";
 import { setLimits, usePrefs } from "../../stores/prefs";
 import { clearAvoid, toggleAvoid } from "../../stores/allergens";
-import {
-  DEFAULT_TARGET,
-  clearCompare,
-  clearMeal,
-  mealTotals,
-  setQty,
-  setTarget,
-  toggleCompare,
-  useTray,
-  type DailyTarget,
-  type TrayItem,
-} from "../../stores/tray";
+import { clearCompare, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { TargetsForm } from "../tracker/TargetsForm";
 import { openSheet, useSheet } from "../../stores/ui";
 import { ALLERGENS } from "../../utils/allergens";
 import { GOALS, NO_LIMITS, goalFor } from "../../utils/goals";
-import { MACRO_COLORS, proteinDensity } from "../../utils/macros";
+import { proteinDensity } from "../../utils/macros";
 import { RangeField } from "../restaurants/RangeField";
-import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 
@@ -35,7 +24,7 @@ export function Sheets() {
   }, [sheet]);
 
   if (!sheet) return null;
-  const title = { prefs: "Preferences", meal: "Your meal", compare: "Compare" }[sheet];
+  const title = { prefs: "Preferences", targets: "Daily targets", compare: "Compare" }[sheet];
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/25" onClick={() => openSheet(null)}>
@@ -57,7 +46,7 @@ export function Sheets() {
             <Icon name="close" className="h-5 w-5" />
           </button>
         </div>
-        {sheet === "prefs" ? <PrefsSheet /> : sheet === "meal" ? <MealSheet /> : <CompareSheet />}
+        {sheet === "prefs" ? <PrefsSheet /> : sheet === "targets" ? <TargetsForm onDone={() => openSheet(null)} /> : <CompareSheet />}
       </div>
     </div>
   );
@@ -192,129 +181,7 @@ function PrefsSheet() {
   );
 }
 
-/* ---------- meal ---------- */
-
 const round1 = (n: number) => Math.round(n * 10) / 10;
-
-function MealSheet() {
-  const { meal, target } = useTray();
-  const totals = mealTotals(meal);
-
-  if (meal.length === 0) {
-    return (
-      <p className="px-5 py-10 text-sm text-gray-600">
-        Your meal is empty. Use <span className="font-semibold">Add</span> on any menu item to start adding up
-        calories and macros, even across restaurants.
-      </p>
-    );
-  }
-
-  return (
-    <>
-      <ul className="flex-1 divide-y divide-gray-200 overflow-y-auto">
-        {meal.map(({ item, qty }) => (
-          <li key={item.id} className="flex items-center gap-3 px-5 py-3">
-            <FoodImage src={item.imageUrl} alt={item.name} tintKey={item.restaurantSlug} variant="thumb" className="h-11 w-11 shrink-0 rounded-md border border-gray-200" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
-              <p className="text-xs text-gray-500">
-                {item.restaurantName} · {item.calories ?? "–"} cal · {item.protein ?? "–"} g protein
-              </p>
-            </div>
-            <div className="flex items-center rounded-md border border-gray-300">
-              <button type="button" onClick={() => setQty(item.id, qty - 1)} aria-label={`One less ${item.name}`} className="p-1.5 text-gray-600 hover:text-gray-900">
-                <Icon name="remove" className="h-4 w-4" />
-              </button>
-              <span className="w-5 text-center text-sm tabular-nums">{qty}</span>
-              <button type="button" onClick={() => setQty(item.id, qty + 1)} aria-label={`One more ${item.name}`} className="p-1.5 text-gray-600 hover:text-gray-900">
-                <Icon name="add" className="h-4 w-4" />
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <div className="border-t border-gray-200 bg-gray-50 px-5 py-4">
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm text-gray-600">Total</span>
-          <span className="text-2xl font-bold text-gray-900 tabular-nums">{Math.round(totals.calories)} cal</span>
-        </div>
-        <div className="mt-3 space-y-2.5">
-          <TotalRow label="Calories" value={totals.calories} unit="cal" target={target?.calories} color="var(--color-gray-700)" />
-          <TotalRow label="Protein" value={totals.protein} unit="g" target={target?.protein} color={MACRO_COLORS.protein} />
-          <TotalRow label="Carbs" value={totals.carbs} unit="g" target={target?.carbs} color={MACRO_COLORS.carbs} />
-          <TotalRow label="Fat" value={totals.fat} unit="g" target={target?.fat} color={MACRO_COLORS.fat} />
-        </div>
-        <TargetEditor target={target} />
-        <button type="button" onClick={clearMeal} className={`mt-4 text-sm ${ui.link}`}>
-          Clear meal
-        </button>
-      </div>
-    </>
-  );
-}
-
-function TotalRow({ label, value, unit, target, color }: { label: string; value: number; unit: string; target?: number; color: string }) {
-  const over = target != null && value > target;
-  return (
-    <div>
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-700">{label}</span>
-        <span className={`tabular-nums ${over ? "font-semibold text-danger-ink" : "text-gray-900"}`}>
-          {round1(value)} {unit}
-          {target != null && <span className="text-gray-500"> of {target}</span>}
-        </span>
-      </div>
-      {target != null && (
-        <div className="mt-1 h-1 rounded-full bg-gray-200">
-          <div
-            className="h-full rounded-full"
-            style={{ width: `${Math.min(100, (value / Math.max(1, target)) * 100)}%`, background: over ? "var(--color-danger-ink)" : color }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TargetEditor({ target }: { target: DailyTarget | null }) {
-  if (!target) {
-    return (
-      <button type="button" onClick={() => setTarget(DEFAULT_TARGET)} className={`mt-4 block text-sm ${ui.link}`}>
-        Compare with a daily target
-      </button>
-    );
-  }
-  const field = (key: keyof DailyTarget, label: string) => (
-    <label className="block text-xs text-gray-600">
-      {label}
-      <input
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={target[key]}
-        onChange={(e) => setTarget({ ...target, [key]: Math.max(0, Number(e.target.value) || 0) })}
-        className={`mt-0.5 ${ui.input} h-8`}
-      />
-    </label>
-  );
-  return (
-    <div className="mt-4">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-900">Daily target</span>
-        <button type="button" onClick={() => setTarget(null)} className="text-xs text-gray-500 hover:text-gray-900">
-          Remove
-        </button>
-      </div>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {field("calories", "Calories")}
-        {field("protein", "Protein (g)")}
-        {field("carbs", "Carbs (g)")}
-        {field("fat", "Fat (g)")}
-      </div>
-    </div>
-  );
-}
 
 /* ---------- compare ---------- */
 

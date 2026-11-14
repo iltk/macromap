@@ -1,10 +1,14 @@
-import { addToMeal, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { useTracker } from "../../stores/tracker";
+import { logWithNotice } from "./logWithNotice";
+import { toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { dayKey } from "../../utils/dates";
 import { Icon } from "../ui/icons";
 
-/** "Add" (to meal) and "Compare" controls for a menu item. */
+/** "Add" (log to today) and "Compare" controls for a menu item. */
 export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOnly?: boolean }) {
-  const { meal, compare } = useTray();
-  const inMeal = meal.find((e) => e.item.id === item.id)?.qty ?? 0;
+  const { days } = useTracker();
+  const { compare } = useTray();
+  const loggedToday = (days[dayKey()] ?? []).filter((e) => e.item.id === item.id).reduce((n, e) => n + e.qty, 0);
   const comparing = compare.some((c) => c.id === item.id);
   const base = "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium";
 
@@ -12,14 +16,14 @@ export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOn
     <span className="inline-flex shrink-0 gap-1">
       <button
         type="button"
-        onClick={() => addToMeal(item)}
-        title={inMeal ? `In your meal (×${inMeal}). Add another` : "Add to your meal"}
-        aria-label={`Add ${item.name} to meal`}
-        className={`${base} ${inMeal ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+        onClick={() => logWithNotice(item)}
+        title={loggedToday ? `Logged today (×${loggedToday}). Log another` : "Log to today"}
+        aria-label={`Log ${item.name} to today`}
+        className={`${base} ${loggedToday ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
       >
-        <Icon name={inMeal ? "check" : "add"} className="h-3.5 w-3.5" />
-        <span className={iconOnly ? "sr-only" : ""}>{inMeal ? `Added${inMeal > 1 ? ` ×${inMeal}` : ""}` : "Add"}</span>
-        {iconOnly && inMeal > 1 && <span className="tabular-nums">{inMeal}</span>}
+        <Icon name={loggedToday ? "check" : "add"} className="h-3.5 w-3.5" />
+        <span className={iconOnly ? "sr-only" : ""}>{loggedToday ? `Logged${loggedToday > 1 ? ` ×${loggedToday}` : ""}` : "Add"}</span>
+        {iconOnly && loggedToday > 1 && <span className="tabular-nums">{loggedToday}</span>}
       </button>
       <button
         type="button"

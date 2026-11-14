@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router";
 import { usePrefs } from "../../stores/prefs";
-import { mealTotals, useTray } from "../../stores/tray";
+import { useTray } from "../../stores/tray";
+import { useToday } from "../../stores/tracker";
 import { openSheet } from "../../stores/ui";
 import { Icon } from "../ui/icons";
 
@@ -23,8 +24,8 @@ const navCls = ({ isActive }: { isActive: boolean }) =>
 
 export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
   const prefs = usePrefs();
-  const { meal, compare } = useTray();
-  const totals = mealTotals(meal);
+  const { compare } = useTray();
+  const today = useToday();
 
   return (
     <header className="sticky top-0 z-40 shrink-0 border-b border-gray-200 bg-white">
@@ -37,6 +38,14 @@ export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
           <NavLink to="/restaurants" className={navCls}>
             Restaurants
           </NavLink>
+          <NavLink to="/tracker" className={navCls}>
+            Tracker
+            {today.left && (
+              <span className={`ml-1.5 hidden rounded px-1.5 text-xs font-medium tabular-nums sm:inline ${today.left.calories < 0 ? "bg-danger-soft text-danger-ink" : "bg-gray-100 text-gray-700"}`}>
+                {today.left.calories < 0 ? `${Math.round(-today.left.calories)} over` : `${Math.round(today.left.calories)} left`}
+              </span>
+            )}
+          </NavLink>
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
@@ -46,19 +55,6 @@ export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
               Compare {compare.length}/2
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => openSheet("meal")}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            <Icon name="meal" className="h-4 w-4" />
-            <span className="hidden sm:inline">Meal</span>
-            {totals.count > 0 && (
-              <span className="rounded bg-gray-900 px-1.5 text-xs font-semibold text-white tabular-nums">
-                {Math.round(totals.calories)} cal
-              </span>
-            )}
-          </button>
           <button
             type="button"
             onClick={() => openSheet("prefs")}

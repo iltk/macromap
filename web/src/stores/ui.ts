@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 /** Which full-height sheet is open (not persisted: a reload never reopens a drawer). */
-export type Sheet = "prefs" | "meal" | "compare" | null;
+export type Sheet = "prefs" | "targets" | "compare" | null;
 
 let sheet: Sheet = null;
 const listeners = new Set<() => void>();

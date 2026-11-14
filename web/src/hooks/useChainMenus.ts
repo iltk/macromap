@@ -6,7 +6,7 @@ import { useApi } from "./useApi";
 // Menus rarely change during a session: share one request per chain across the app.
 const cache = new Map<string, Promise<RestaurantMenu>>();
 
-function loadMenu(slug: string): Promise<RestaurantMenu> {
+export function loadMenu(slug: string): Promise<RestaurantMenu> {
   let p = cache.get(slug);
   if (!p) {
     p = fetchRestaurantMenu(slug).catch((err) => {
