@@ -22,7 +22,7 @@ public class Restaurant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="slug" , nullable = false)
+    @Column(name="slug" , nullable = false, unique = true)
     private String slug;
 
     @Column(name="name",nullable = false)
@@ -30,6 +30,12 @@ public class Restaurant {
 
     @Column(name="category",nullable = false)
     private String category;
+
+    @Column(name = "website")
+    private String website;
+
+    @Column(name = "logo_url")
+    private String logoUrl;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuItem> menuItems = new ArrayList<>();
