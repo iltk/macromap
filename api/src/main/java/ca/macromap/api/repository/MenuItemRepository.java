@@ -18,7 +18,7 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
     /** {@code pattern} is a lower-cased LIKE pattern, e.g. {@code %teen%}. */
     @Query("""
         SELECT new ca.macromap.api.dto.SearchResponse$MenuItemHit(
-            m.id, r.id, r.slug, r.name, m.name, m.calories, m.protein)
+            m.id, r.id, r.slug, r.name, m.name, m.calories, m.protein, m.imageUrl)
         FROM MenuItem m JOIN m.restaurant r
         WHERE LOWER(m.name) LIKE :pattern ESCAPE '\\'
            OR LOWER(m.menuCategory) LIKE :pattern ESCAPE '\\'

@@ -59,6 +59,12 @@ public class MenuItem {
     @Column(name = "last_verified")
     private LocalDate lastVerified;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "description")
+    private String description;
+
 
 
 

@@ -16,6 +16,7 @@ public record RestaurantSummary(
         String category,
         String description,
         String brandColor,
+        String logoUrl,
         Long locationCount,
         Long menuItemCount,
         Integer lightestCalories,

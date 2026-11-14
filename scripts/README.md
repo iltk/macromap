@@ -15,7 +15,7 @@ its checksum changes).
 * `data/menus/mcdonalds.csv`, `data/menus/tim-hortons.csv`: **fill these in** from the official
   Canadian nutrition pages. Columns:
 
-  `menu_category,name,serving_g,calories,fat_g,protein_g,carbs_g,source,last_verified,allergens`
+  `menu_category,name,serving_g,calories,fat_g,protein_g,carbs_g,source,last_verified,allergens,image_url,description`
 
   e.g. `Burger,Big Mac,,,,,,https://www.mcdonalds.com/ca/en-ca/product/big-mac.html,2026-11-14,milk;egg;wheat;soy;sesame;mustard`
 
@@ -28,3 +28,10 @@ To add a chain: add it to `RESTAURANTS` in `build_seed.py` and `CHAINS` in `fetc
 (using its `brand:wikidata` id), then run both scripts.
 
 Location data © OpenStreetMap contributors, ODbL.
+
+## Images
+
+* `image_url` (menu CSVs, kept across xlsx re-imports): a full URL or an app path such as
+  `/images/menu/aw/teen-burger.jpg` (files in `web/public/images/...`). Use images you have the rights to.
+  Items without one show a neutral placeholder.
+* Restaurant logos: the last field of each `RESTAURANTS` entry in `build_seed.py` (`None` = coloured monogram).

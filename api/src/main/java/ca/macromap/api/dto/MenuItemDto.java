@@ -10,6 +10,7 @@ import java.util.UUID;
 public record MenuItemDto(
         UUID id,
         String name,
+        String description,
         String menuCategory,
         String servingSize,
         Integer calories,
@@ -17,6 +18,7 @@ public record MenuItemDto(
         BigDecimal carbs,
         BigDecimal fat,
         String source,
+        String imageUrl,
         /*
          * Allergen codes (e.g. "milk", "wheat"). null = unknown (no data),
          * empty = verified to contain none of the tracked allergens.
@@ -24,8 +26,8 @@ public record MenuItemDto(
         List<String> allergens
 ) {
     public static MenuItemDto from(MenuItem m) {
-        return new MenuItemDto(m.getId(), m.getName(), m.getMenuCategory(), m.getServingSize(),
-                m.getCalories(), m.getProtein(), m.getCarbs(), m.getFat(), m.getSource(),
+        return new MenuItemDto(m.getId(), m.getName(), m.getDescription(), m.getMenuCategory(), m.getServingSize(),
+                m.getCalories(), m.getProtein(), m.getCarbs(), m.getFat(), m.getSource(), m.getImageUrl(),
                 parseAllergens(m.getAllergens()));
     }
 

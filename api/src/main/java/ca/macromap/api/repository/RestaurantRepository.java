@@ -19,7 +19,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     @Query("""
         SELECT new ca.macromap.api.dto.RestaurantSummary(
-            r.id, r.slug, r.name, r.category, r.description, r.brandColor,
+            r.id, r.slug, r.name, r.category, r.description, r.brandColor, r.logoUrl,
             (SELECT COUNT(rl) FROM RestaurantLocation rl WHERE rl.restaurant = r),
             (SELECT COUNT(m) FROM MenuItem m WHERE m.restaurant = r),
             (SELECT MIN(m.calories) FROM MenuItem m WHERE m.restaurant = r),

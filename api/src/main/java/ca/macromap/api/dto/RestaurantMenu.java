@@ -12,12 +12,13 @@ public record RestaurantMenu(
         String category,
         String description,
         String brandColor,
+        String logoUrl,
         String website,
         long locationCount,
         List<MenuItemDto> menu
 ) {
     public static RestaurantMenu from(Restaurant r, long locationCount, List<MenuItemDto> menu) {
         return new RestaurantMenu(r.getId(), r.getSlug(), r.getName(), r.getCategory(), r.getDescription(),
-                r.getBrandColor(), r.getWebsite(), locationCount, menu);
+                r.getBrandColor(), r.getLogoUrl(), r.getWebsite(), locationCount, menu);
     }
 }

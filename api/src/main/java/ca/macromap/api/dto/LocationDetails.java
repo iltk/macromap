@@ -15,6 +15,7 @@ public record LocationDetails(
         String name,
         String category,
         String brandColor,
+        String logoUrl,
         String website,
         String address,
         String city,
@@ -27,7 +28,7 @@ public record LocationDetails(
     public static LocationDetails from(RestaurantLocation loc, List<MenuItemDto> menu) {
         Restaurant r = loc.getRestaurant();
         return new LocationDetails(loc.getId(), r.getId(), r.getSlug(), r.getName(), r.getCategory(),
-                r.getBrandColor(), r.getWebsite(), loc.getAddress(), loc.getCity(), loc.getPhone(), loc.getOpeningHours(),
+                r.getBrandColor(), r.getLogoUrl(), r.getWebsite(), loc.getAddress(), loc.getCity(), loc.getPhone(), loc.getOpeningHours(),
                 loc.getLatitude(), loc.getLongitude(), menu);
     }
 }

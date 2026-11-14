@@ -8,7 +8,7 @@ public record SearchResponse(List<RestaurantHit> restaurants, List<MenuItemHit> 
     public record RestaurantHit(Long restaurantId, String slug, String name, String category, Long locationCount) {}
 
     public record MenuItemHit(UUID id, Long restaurantId, String restaurantSlug, String restaurantName,
-                              String name, Integer calories, java.math.BigDecimal protein) {}
+                              String name, Integer calories, java.math.BigDecimal protein, String imageUrl) {}
 
     public static SearchResponse empty() {
         return new SearchResponse(List.of(), List.of());
