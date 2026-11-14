@@ -16,7 +16,7 @@ export function AllergenPicker({ size = "md" }: { size?: "sm" | "md" }) {
               onClick={() => toggleAvoid(a.code)}
               aria-pressed={on}
               className={`rounded-full border font-semibold ${chip} ${
-                on ? "border-[#d93025] bg-[#fce8e6] text-[#a50e0e] line-through" : "border-gray-300 bg-white text-gray-700 hover:border-gray-900"
+                on ? "border-[#d93025] bg-danger-soft text-danger-ink line-through" : "border-gray-300 bg-white text-gray-700 hover:border-gray-900"
               }`}
             >
               {a.label}
@@ -24,7 +24,7 @@ export function AllergenPicker({ size = "md" }: { size?: "sm" | "md" }) {
           );
         })}
         {avoid.length > 0 && (
-          <button type="button" onClick={clearAvoid} className={`font-semibold text-[#1a73e8] hover:underline ${chip}`}>
+          <button type="button" onClick={clearAvoid} className={`font-semibold text-link hover:underline ${chip}`}>
             Clear
           </button>
         )}

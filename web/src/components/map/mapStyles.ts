@@ -1,11 +1,15 @@
 const KEY = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
 
-export type MapStyleId = "streets" | "satellite";
+export type MapStyleId = "streets" | "streetsDark" | "satellite";
 
 export const MAP_STYLES: Record<MapStyleId, { label: string; url: string }> = {
   streets: {
     label: "Map",
     url: `https://api.maptiler.com/maps/streets-v2/style.json?key=${KEY}`,
+  },
+  streetsDark: {
+    label: "Map",
+    url: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${KEY}`,
   },
   satellite: {
     label: "Satellite",

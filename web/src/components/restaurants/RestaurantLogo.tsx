@@ -20,8 +20,16 @@ export function RestaurantLogo({
   return (
     <span
       aria-hidden
-      className={`flex shrink-0 items-center justify-center font-bold tracking-tight ${dims}`}
-      style={{ background: `${color}1f`, color: readableOnWhite(color), boxShadow: `inset 0 0 0 1px ${color}55` }}
+      // light theme: readable ink for pale brands (e.g. gold); dark theme: the brand colour itself
+      className={`flex shrink-0 items-center justify-center font-bold tracking-tight text-(--logo-ink) dark:text-(--logo-color) ${dims}`}
+      style={
+        {
+          "--logo-color": color,
+          "--logo-ink": readableOnWhite(color),
+          background: `${color}1f`,
+          boxShadow: `inset 0 0 0 1px ${color}55`,
+        } as React.CSSProperties
+      }
     >
       {initials}
     </span>

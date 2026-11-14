@@ -36,7 +36,7 @@ export function FilterChips({ venues, filter, onChange, openNow, onOpenNowChange
         onClick={() => onOpenNowChange(!openNow)}
         aria-pressed={openNow}
         className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-colors ${
-          openNow ? "bg-[#e6f4ea] text-[#137333]" : "bg-white text-gray-800 hover:bg-gray-50"
+          openNow ? "bg-success-soft text-success-ink" : "bg-white text-gray-800 hover:bg-gray-50"
         }`}
       >
         <Icon name="clock" className="h-4 w-4" />
@@ -53,7 +53,7 @@ export function FilterChips({ venues, filter, onChange, openNow, onOpenNowChange
             onClick={() => onChange(active ? { kind: "all" } : chip.value)}
             aria-pressed={active}
             className={`h-8 shrink-0 rounded-full px-3 text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.25)] transition-colors ${
-              active ? "bg-[#e8f0fe] text-[#1967d2]" : "bg-white text-gray-800 hover:bg-gray-50"
+              active ? "bg-accent-soft text-accent-ink" : "bg-white text-gray-800 hover:bg-gray-50"
             }`}
           >
             {chip.label}

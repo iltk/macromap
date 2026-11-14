@@ -127,7 +127,7 @@ export function NearbyPanel({
                   <span className="shrink-0 text-xs text-gray-500 tabular-nums">{formatDistance(distance)}</span>
                 </span>
                 {status && (
-                  <span className={`block text-xs ${status.open ? "text-[#188038]" : "text-[#d93025]"}`}>{status.label}</span>
+                  <span className={`block text-xs ${status.open ? "text-success-ink" : "text-danger-ink"}`}>{status.label}</span>
                 )}
                 <span className="mt-1 block text-sm">
                   {pick ? (

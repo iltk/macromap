@@ -1,5 +1,6 @@
 import { Link, NavLink, useLocation } from "react-router";
 import { Icon } from "../ui/icons";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
@@ -13,7 +14,7 @@ export function Logo({ className = "" }: { className?: string }) {
         <path fill="#1a73e8" d="M11 21v-9h2.2l2.8 4.6 2.8-4.6H21v9h-2.2v-5.4L16 20l-2.8-4.4V21z" />
       </svg>
       <span className="text-[22px] font-medium tracking-tight text-gray-900">
-        Macro<span className="text-[#1a73e8]">Map</span>
+        Macro<span className="text-link">Map</span>
       </span>
     </Link>
   );
@@ -22,7 +23,7 @@ export function Logo({ className = "" }: { className?: string }) {
 const navCls = ({ isActive }: { isActive: boolean }) =>
   `border-b-2 py-1 text-[15px] transition-colors ${
     isActive
-      ? "border-[#1a73e8] text-[#1a73e8]"
+      ? "border-[#1a73e8] text-link"
       : "border-transparent text-gray-700 hover:text-gray-900"
   }`;
 
@@ -44,6 +45,8 @@ export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
             Map
           </NavLink>
         </nav>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
         <Link
           to={onMap ? "/restaurants" : "/"}
           className="hidden items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 sm:flex"
@@ -51,6 +54,7 @@ export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
           <Icon name={onMap ? "restaurant" : "place"} className="h-4 w-4 text-[#ea4335]" />
           {onMap ? "Browse menus" : "Find near me"}
         </Link>
+        </div>
       </div>
     </header>
   );

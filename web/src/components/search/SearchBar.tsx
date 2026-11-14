@@ -170,7 +170,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={clearRecents}
-                  className="font-medium tracking-normal text-[#1a73e8] normal-case hover:underline"
+                  className="font-medium tracking-normal text-link normal-case hover:underline"
                 >
                   Clear history
                 </button>

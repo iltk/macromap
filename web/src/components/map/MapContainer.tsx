@@ -14,7 +14,8 @@ import type { Coordinates, Venue } from "../../types/venues";
 import { TORONTO } from "../../utils/geo";
 import { UserPositionMarker } from "../markers/UserPositionMarker";
 import { Icon } from "../ui/icons";
-import { MAP_STYLES, type MapStyleId } from "./mapStyles";
+import { MAP_STYLES } from "./mapStyles";
+import { useResolvedTheme } from "../../stores/theme";
 import { registerPinImages, type PinBrand } from "./pinImages";
 import { brandColorFor, initialsFor } from "../../utils/brand";
 import {
@@ -82,7 +83,9 @@ export function MapContainer({
   onLocateMe,
   onReady,
 }: MapContainerProps) {
-  const [styleId, setStyleId] = useState<MapStyleId>("streets");
+  const [satellite, setSatellite] = useState(false);
+  const dark = useResolvedTheme() === "dark";
+  const styleId = satellite ? "satellite" : dark ? "streetsDark" : "streets";
   const [cursor, setCursor] = useState<string>("");
 
   const venueData = useMemo(() => toFeatureCollection(venues, fitsBySlug), [venues, fitsBySlug]);
@@ -113,7 +116,8 @@ export function MapContainer({
     [mapRef],
   );
 
-  const pinLayer = useMemo(() => venuePinLayer(selectedId), [selectedId]);
+  const pinLayer = useMemo(() => venuePinLayer(selectedId, dark), [selectedId, dark]);
+  const selectedLayer = useMemo(() => selectedPinLayer(dark), [dark]);
 
   const handleClick = async (e: MapLayerMouseEvent) => {
     const feature = e.features?.[0];
@@ -134,7 +138,7 @@ export function MapContainer({
     if (id) onSelectVenue(id);
   };
 
-  const nextStyle: MapStyleId = styleId === "streets" ? "satellite" : "streets";
+  const nextStyle = satellite ? "streets" : "satellite";
 
   return (
     <div className="relative h-full w-full">
@@ -164,7 +168,7 @@ export function MapContainer({
           <Layer {...pinLayer} />
         </Source>
         <Source id={SELECTED_SOURCE} type="geojson" data={selectedData}>
-          <Layer {...selectedPinLayer} />
+          <Layer {...selectedLayer} />
         </Source>
 
         <UserPositionMarker position={userPosition} />
@@ -191,7 +195,7 @@ export function MapContainer({
       {/* Map / Satellite toggle (bottom-left, like Google's layer switcher) */}
       <button
         type="button"
-        onClick={() => setStyleId(nextStyle)}
+        onClick={() => setSatellite((v) => !v)}
         className={`absolute bottom-6 left-4 flex h-16 w-16 flex-col items-center justify-end overflow-hidden rounded-lg border-2 border-white shadow-lg transition-[left] duration-300 ${panelOpen ? "max-md:hidden md:left-[424px]" : ""}`}
         style={{
           background:
@@ -203,7 +207,7 @@ export function MapContainer({
       >
         <span
           className={`mb-1 flex items-center gap-0.5 text-[11px] font-medium ${
-            nextStyle === "satellite" ? "text-white" : "text-gray-800"
+            nextStyle === "satellite" ? "text-white" : "text-[#202124]"
           }`}
         >
           <Icon name="layers" className="h-3.5 w-3.5" />

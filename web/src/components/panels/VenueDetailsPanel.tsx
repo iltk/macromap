@@ -62,7 +62,7 @@ export function VenueDetailsPanel(props: VenueDetailsPanelProps) {
               <button
                 type="button"
                 onClick={onRetry}
-                className="mt-4 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-[#1a73e8] hover:bg-gray-50"
+                className="mt-4 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-link hover:bg-gray-50"
               >
                 Try again
               </button>
@@ -125,7 +125,7 @@ function PanelContent({
           {distance && <> · {distance}</>}
         </p>
         {status && (
-          <p className={`mt-1 text-sm ${status.open ? "text-[#188038]" : "text-[#d93025]"}`}>
+          <p className={`mt-1 text-sm ${status.open ? "text-success-ink" : "text-danger-ink"}`}>
             {status.label}
           </p>
         )}
@@ -157,7 +157,7 @@ function PanelContent({
             onClick={() => onTabChange(t)}
             className={`flex-1 py-3 text-sm font-medium capitalize ${
               tab === t
-                ? "border-b-[3px] border-[#1a73e8] text-[#1a73e8]"
+                ? "border-b-[3px] border-[#1a73e8] text-link"
                 : "border-b-[3px] border-transparent text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -203,13 +203,13 @@ function Action({
   const circle = (
     <span
       className={`flex h-10 w-10 items-center justify-center rounded-full ${
-        primary ? "bg-[#1a73e8] text-white" : "border border-gray-300 text-[#1a73e8]"
+        primary ? "bg-[#1a73e8] text-white" : "border border-gray-300 text-link"
       }`}
     >
       <Icon name={icon} className="h-5 w-5" />
     </span>
   );
-  const cls = "flex w-16 flex-col items-center gap-1 text-xs text-[#1a73e8] hover:opacity-80";
+  const cls = "flex w-16 flex-col items-center gap-1 text-xs text-link hover:opacity-80";
   return href ? (
     <a href={href} target="_blank" rel="noreferrer" className={cls}>
       {circle}

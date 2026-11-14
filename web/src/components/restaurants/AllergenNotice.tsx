@@ -2,7 +2,7 @@
 export function AllergenNotice({ contains, unknown }: { contains: number; unknown: number }) {
   if (contains === 0 && unknown === 0) return null;
   return (
-    <p className="mt-3 rounded-lg border border-[#f9ab00]/40 bg-[#fef7e0] px-3 py-2 text-xs text-[#7a4a00]">
+    <p className="mt-3 rounded-lg border border-[#f9ab00]/40 bg-warn-soft px-3 py-2 text-xs text-warn-ink">
       {contains > 0 && (
         <>
           <span className="font-semibold">{contains}</span> hidden because they contain an allergen you avoid.{" "}

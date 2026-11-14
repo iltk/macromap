@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import { TrayDock } from "./components/tray/TrayDock";
+import { ThemeController } from "./stores/theme";
 import { MapPage } from "./pages/MapPage";
 import { RestaurantMenuPage } from "./pages/RestaurantMenuPage";
 import { RestaurantsPage } from "./pages/RestaurantsPage";
@@ -7,6 +8,7 @@ import { RestaurantsPage } from "./pages/RestaurantsPage";
 function App() {
   return (
     <BrowserRouter>
+      <ThemeController />
       <Routes>
         <Route path="/" element={<MapPage />} />
         <Route path="/restaurants" element={<RestaurantsPage />} />

@@ -1,5 +1,58 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by a class on <html> (system / light / dark, see stores/theme.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic colours used by the components (light values). */
+@theme {
+  --color-page: #f6f5f1;
+  --color-row-hover: #fbfaf7;
+  --color-link: #1a73e8;
+  --color-ink-link: #8ab4f8; /* link on an ink (gray-900) surface */
+  --color-accent-soft: #e8f0fe;
+  --color-accent-ink: #1967d2;
+  --color-success-soft: #e6f4ea;
+  --color-success-ink: #137333;
+  --color-warn-soft: #fef7e0;
+  --color-warn-ink: #8a4b00;
+  --color-danger-soft: #fce8e6;
+  --color-danger-ink: #c5221f;
+}
+
+/*
+ * Dark theme: Tailwind v4 utilities read colours from CSS variables, so flipping the
+ * white/gray scale turns every surface and text colour without per-component dark: classes.
+ * "Ink" surfaces (bg-gray-900 + text-white) become light chips on dark, which reads well.
+ */
+.dark {
+  color-scheme: dark;
+  --color-white: #1c1d20;
+  --color-gray-50: #232428;
+  --color-gray-100: #2a2b30;
+  --color-gray-200: #36383e;
+  --color-gray-300: #474950;
+  --color-gray-400: #6c6f78;
+  --color-gray-500: #9a9da6;
+  --color-gray-600: #b5b8bf;
+  --color-gray-700: #cdd0d5;
+  --color-gray-800: #e2e4e8;
+  --color-gray-900: #f1f2f4;
+  --color-gray-950: #fafafa;
+
+  --color-page: #141517;
+  --color-row-hover: #222327;
+  --color-link: #8ab4f8;
+  --color-ink-link: #1a73e8;
+  --color-accent-soft: #1e2a3d;
+  --color-accent-ink: #a8c7fa;
+  --color-success-soft: #17301f;
+  --color-success-ink: #81c995;
+  --color-warn-soft: #3a2e10;
+  --color-warn-ink: #fdd663;
+  --color-danger-soft: #3c1d1b;
+  --color-danger-ink: #f28b82;
+}
+
 @layer base {
   html,
   body,
@@ -10,7 +63,8 @@
   body {
     font-family: Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    background: #f8f9fa;
+    background: var(--color-page);
+    color: var(--color-gray-900);
   }
 }
 
@@ -24,4 +78,21 @@
 /* keep MapLibre controls clear of the mobile bottom sheet */
 .maplibregl-ctrl-bottom-right {
   margin-bottom: 4px;
+}
+
+/* MapLibre's own controls in dark mode (its stylesheet is more specific, hence !important) */
+.dark .maplibregl-ctrl-group,
+.dark .maplibregl-ctrl.maplibregl-ctrl-attrib,
+.dark .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: #2a2b30 !important;
+  color: #cdd0d5 !important;
+}
+.dark .maplibregl-ctrl-attrib a {
+  color: #cdd0d5 !important;
+}
+.dark .maplibregl-ctrl-group button + button {
+  border-top-color: #474950;
+}
+.dark .maplibregl-ctrl button .maplibregl-ctrl-icon {
+  filter: invert(1);
 }

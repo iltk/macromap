@@ -22,7 +22,7 @@ export function ItemActions({ item, compact = false }: { item: TrayItem; compact
         title={inMeal ? `In your meal ×${inMeal}. Add another` : "Add to meal"}
         aria-label={`Add ${item.name} to meal`}
         className={`${base} ${size} ${
-          inMeal ? "border-[#137333] bg-[#e6f4ea] text-[#137333]" : "border-gray-300 text-gray-700 hover:border-gray-900"
+          inMeal ? "border-[#137333] bg-success-soft text-success-ink" : "border-gray-300 text-gray-700 hover:border-gray-900"
         }`}
       >
         <Icon name="add" className="h-3.5 w-3.5" />
@@ -39,7 +39,7 @@ export function ItemActions({ item, compact = false }: { item: TrayItem; compact
         title={comparing ? "Remove from comparison" : "Compare with another item"}
         aria-label={`${comparing ? "Stop comparing" : "Compare"} ${item.name}`}
         className={`${base} ${size} ${
-          comparing ? "border-[#1a73e8] bg-[#e8f0fe] text-[#1967d2]" : "border-gray-300 text-gray-700 hover:border-gray-900"
+          comparing ? "border-[#1a73e8] bg-accent-soft text-accent-ink" : "border-gray-300 text-gray-700 hover:border-gray-900"
         }`}
       >
         <Icon name="compare" className="h-3.5 w-3.5" />

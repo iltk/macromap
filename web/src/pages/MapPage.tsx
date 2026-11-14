@@ -300,7 +300,7 @@ export function MapPage() {
                 onClick={() => (nearbyOrigin ? setNearbyOrigin(null) : openNearby())}
                 aria-pressed={nearbyOrigin !== null}
                 className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium shadow-[0_1px_3px_rgba(0,0,0,0.25)] ${
-                  nearbyOrigin ? "bg-[#fef7e0] text-[#b06000]" : "bg-white text-gray-800 hover:bg-gray-50"
+                  nearbyOrigin ? "bg-warn-soft text-warn-ink" : "bg-white text-gray-800 hover:bg-gray-50"
                 }`}
               >
                 <Icon name="trophy" className="h-4 w-4 text-[#f9ab00]" />

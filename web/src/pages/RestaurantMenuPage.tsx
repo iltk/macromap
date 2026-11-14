@@ -48,7 +48,7 @@ export function RestaurantMenuPage() {
   }, [data]);
 
   return (
-    <div className="min-h-dvh bg-[#f6f5f1]">
+    <div className="min-h-dvh bg-page">
       <SiteHeader />
       {error ? (
         <div className="mx-auto max-w-6xl px-4 py-24 text-center">
@@ -254,7 +254,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
       </div>
 
       {filtersActive && (
-        <button type="button" onClick={reset} className="text-sm font-semibold text-[#1a73e8] hover:underline">
+        <button type="button" onClick={reset} className="text-sm font-semibold text-link hover:underline">
           Reset everything
         </button>
       )}
@@ -399,7 +399,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
                   <button
                     type="button"
                     onClick={() => setSort({ key: "density", dir: -1 })}
-                    className="shrink-0 text-sm font-semibold text-[#8ab4f8] hover:underline"
+                    className="shrink-0 text-sm font-semibold text-ink-link hover:underline"
                   >
                     Rank by protein per calorie →
                   </button>
@@ -409,7 +409,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
               {visible.length === 0 ? (
                 <div className="mt-4 rounded-xl border border-dashed border-gray-300 p-10 text-center">
                   <p className="font-bold text-gray-900">Nothing on this menu fits those limits.</p>
-                  <button type="button" onClick={reset} className="mt-2 text-sm font-semibold text-[#1a73e8]">
+                  <button type="button" onClick={reset} className="mt-2 text-sm font-semibold text-link">
                     Reset everything
                   </button>
                 </div>
@@ -512,7 +512,7 @@ function MenuTable({
               <tr
                 key={m.id}
                 ref={focused ? (el) => { focusRef.current = el; } : undefined}
-                className={`border-b border-gray-200 last:border-b-0 ${focused ? "bg-[#e8f0fe]" : "hover:bg-[#fbfaf7]"}`}
+                className={`border-b border-gray-200 last:border-b-0 ${focused ? "bg-accent-soft" : "hover:bg-row-hover"}`}
               >
                 <td className="px-3 py-2">
                   <span className="font-semibold text-gray-900">{m.name}</span>

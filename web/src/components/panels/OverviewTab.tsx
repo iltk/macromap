@@ -39,7 +39,7 @@ export function OverviewTab({
               aria-expanded={hoursOpen}
             >
               {status ? (
-                <span className={status.open ? "text-[#188038]" : "text-[#d93025]"}>
+                <span className={status.open ? "text-success-ink" : "text-danger-ink"}>
                   {status.label}
                 </span>
               ) : (
@@ -113,7 +113,7 @@ export function OverviewTab({
 function Row({ icon, children }: { icon: IconName; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-6 px-6 py-3 text-sm text-gray-800 hover:bg-gray-50">
-      <Icon name={icon} className="mt-0.5 h-5 w-5 shrink-0 text-[#1a73e8]" />
+      <Icon name={icon} className="mt-0.5 h-5 w-5 shrink-0 text-link" />
       <div className="min-w-0 flex-1">{children}</div>
     </li>
   );

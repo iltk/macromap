@@ -75,7 +75,7 @@ export function RestaurantsPage() {
   const dishHits = dishes.data?.items ?? [];
 
   return (
-    <div className="min-h-dvh bg-[#f6f5f1]">
+    <div className="min-h-dvh bg-page">
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
@@ -130,7 +130,7 @@ export function RestaurantsPage() {
           <p className="text-xs font-semibold tracking-[0.14em] text-gray-500 uppercase">
             Step 2 · Pick a menu
             {goalActive && restaurants && (
-              <span className="ml-2 tracking-normal text-[#188038] normal-case">
+              <span className="ml-2 tracking-normal text-success-ink normal-case">
                 {totals.matches} items fit “{goal.label.toLowerCase()}”
               </span>
             )}
@@ -185,7 +185,7 @@ export function RestaurantsPage() {
           {error ? (
             <div className="rounded-xl border border-gray-200 bg-white p-10 text-center">
               <p className="font-medium text-gray-900">Couldn't load restaurants.</p>
-              <button type="button" onClick={retry} className="mt-3 text-sm font-semibold text-[#1a73e8]">
+              <button type="button" onClick={retry} className="mt-3 text-sm font-semibold text-link">
                 Try again
               </button>
             </div>
@@ -219,7 +219,7 @@ export function RestaurantsPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Prefer to look around?{" "}
-          <Link to={goalActive ? `/?goal=${goal.id}` : "/"} className="font-medium text-[#1a73e8] hover:underline">
+          <Link to={goalActive ? `/?goal=${goal.id}` : "/"} className="font-medium text-link hover:underline">
             Open the map
           </Link>
         </p>
@@ -245,7 +245,7 @@ function RestaurantRow({
     <li>
       <Link
         to={to}
-        className={`group grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 px-4 py-4 hover:bg-[#fbfaf7] sm:px-6 md:grid-cols-[2rem_auto_1fr_9rem_7rem_7rem_auto] ${
+        className={`group grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 px-4 py-4 hover:bg-row-hover sm:px-6 md:grid-cols-[2rem_auto_1fr_9rem_7rem_7rem_auto] ${
           hasMenu ? "" : "text-gray-400"
         }`}
       >

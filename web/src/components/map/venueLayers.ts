@@ -63,7 +63,7 @@ const pinLayout = (selected: boolean): SymbolLayerSpecification["layout"] => ({
   "text-allow-overlap": selected,
 });
 
-export function venuePinLayer(selectedId: string | null): SymbolLayerSpecification {
+export function venuePinLayer(selectedId: string | null, dark = false): SymbolLayerSpecification {
   return {
     id: "venue-pins",
     type: "symbol",
@@ -78,23 +78,23 @@ export function venuePinLayer(selectedId: string | null): SymbolLayerSpecificati
       // pins whose menu has nothing for the active goal fade into the background
       "icon-opacity": ["case", ["get", "dim"], 0.3, 1],
       "text-opacity": ["case", ["get", "dim"], 0.45, 1],
-      "text-color": "#3c4043",
-      "text-halo-color": "#ffffff",
+      "text-color": dark ? "#e8eaed" : "#3c4043",
+      "text-halo-color": dark ? "#202124" : "#ffffff",
       "text-halo-width": 1.5,
     },
   };
 }
 
-export const selectedPinLayer: SymbolLayerSpecification = {
+export const selectedPinLayer = (dark = false): SymbolLayerSpecification => ({
   id: "selected-pin",
   type: "symbol",
   source: SELECTED_SOURCE,
   layout: pinLayout(true),
   paint: {
-    "text-color": SELECTED_COLOR,
-    "text-halo-color": "#ffffff",
+    "text-color": dark ? "#8ab4f8" : SELECTED_COLOR,
+    "text-halo-color": dark ? "#202124" : "#ffffff",
     "text-halo-width": 2,
   },
-};
+});
 
 export const INTERACTIVE_LAYERS = ["clusters", "venue-pins", "selected-pin"];

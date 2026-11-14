@@ -85,7 +85,7 @@ function DrawerHeader({ title, onClear, clearLabel }: { title: string; onClear?:
       <h2 className="text-lg font-black text-gray-900">{title}</h2>
       <div className="flex items-center gap-2">
         {onClear && (
-          <button type="button" onClick={onClear} className="text-sm font-semibold text-[#1a73e8] hover:underline">
+          <button type="button" onClick={onClear} className="text-sm font-semibold text-link hover:underline">
             {clearLabel}
           </button>
         )}
@@ -189,7 +189,7 @@ function TotalRow({
     <div>
       <div className="flex justify-between text-sm">
         <span className="font-semibold text-gray-900">{label}</span>
-        <span className={`tabular-nums ${over ? "font-semibold text-[#d93025]" : "text-gray-700"}`}>
+        <span className={`tabular-nums ${over ? "font-semibold text-danger-ink" : "text-gray-700"}`}>
           {fmt(Math.round(value * 10) / 10)} {unit}
           {target != null && <span className="text-gray-500"> / {target} {unit}</span>}
         </span>
@@ -209,7 +209,7 @@ function TargetEditor({ target }: { target: DailyTarget | null }) {
       <button
         type="button"
         onClick={() => setTarget(DEFAULT_TARGET)}
-        className="mt-4 text-sm font-semibold text-[#1a73e8] hover:underline"
+        className="mt-4 text-sm font-semibold text-link hover:underline"
       >
         Compare against a daily target →
       </button>
@@ -264,7 +264,7 @@ function CompareSheet({ items }: { items: TrayItem[] }) {
       <DrawerHeader title="Compare" onClear={items.length ? clearCompare : undefined} clearLabel="Clear" />
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {items.length < 2 && (
-          <p className="mb-4 rounded-lg bg-[#e8f0fe] px-3 py-2 text-sm text-[#1967d2]">
+          <p className="mb-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent-ink">
             Pick {items.length === 0 ? "two items" : "one more item"} with the <span className="font-semibold">Compare</span> button.
           </p>
         )}
@@ -285,7 +285,7 @@ function CompareSheet({ items }: { items: TrayItem[] }) {
                         <button
                           type="button"
                           onClick={() => toggleCompare(it)}
-                          className="mt-1 text-xs font-medium text-[#1a73e8] hover:underline"
+                          className="mt-1 text-xs font-medium text-link hover:underline"
                         >
                           Remove
                         </button>
@@ -316,7 +316,7 @@ function CompareSheet({ items }: { items: TrayItem[] }) {
                       <td
                         key={i}
                         className={`px-2 py-2.5 tabular-nums ${
-                          winner === i ? "font-bold text-[#137333]" : "text-gray-900"
+                          winner === i ? "font-bold text-success-ink" : "text-gray-900"
                         }`}
                       >
                         {v == null ? "–" : `${fmt(Math.round(v * 10) / 10)} ${row.unit}`}

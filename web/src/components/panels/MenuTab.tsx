@@ -160,7 +160,7 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
           />
         </label>
         {goalActive && (
-          <label className="flex items-center gap-2 rounded-lg bg-[#e6f4ea] px-3 py-2 text-xs text-[#137333]">
+          <label className="flex items-center gap-2 rounded-lg bg-success-soft px-3 py-2 text-xs text-success-ink">
             <input
               type="checkbox"
               checked={onlyFits}
@@ -195,7 +195,7 @@ export function MenuTab({ slug, restaurantName, menu, focusItemId, goal }: MenuT
         </div>
         <div className="flex items-center justify-between gap-2">
           <MacroLegend />
-          <Link to={`/restaurants/${slug}${goalActive ? `?goal=${goal.id}` : ""}`} className="shrink-0 text-xs font-medium text-[#1a73e8] hover:underline">
+          <Link to={`/restaurants/${slug}${goalActive ? `?goal=${goal.id}` : ""}`} className="shrink-0 text-xs font-medium text-link hover:underline">
             Full menu →
           </Link>
         </div>
@@ -265,14 +265,14 @@ function MenuItemRow({
   return (
     <li
       ref={rowRef}
-      className={`border-b border-gray-100 px-6 py-3 ${focused ? "bg-[#e8f0fe]" : ""}`}
+      className={`border-b border-gray-100 px-6 py-3 ${focused ? "bg-accent-soft" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-gray-900">
             {item.name}
             {fits && (
-              <span className="ml-1.5 rounded bg-[#e6f4ea] px-1.5 py-0.5 align-middle text-[10px] font-semibold text-[#137333]">
+              <span className="ml-1.5 rounded bg-success-soft px-1.5 py-0.5 align-middle text-[10px] font-semibold text-success-ink">
                 FITS GOAL
               </span>
             )}
