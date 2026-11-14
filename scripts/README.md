@@ -1,0 +1,25 @@
+# Data scripts
+
+Seed data is generated into Flyway **repeatable** migrations (`R__*.sql`), so editing the inputs and
+re-running the build re-seeds the database on the next API start (Flyway re-runs an `R__` file whenever
+its checksum changes).
+
+| Step | Command | Output |
+|---|---|---|
+| Refresh Toronto locations from OpenStreetMap | `python3 scripts/fetch_osm_locations.py` | `scripts/data/toronto_locations.json` |
+| Build seed SQL | `python3 scripts/build_seed.py` | `api/src/main/resources/db/migration/R__1_…`, `R__2_…` |
+
+## Menus
+
+* `api/aw_nutrition.xlsx` → regenerated into `data/menus/aw.csv` on every build.
+* `data/menus/mcdonalds.csv`, `data/menus/tim-hortons.csv`: **fill these in** from the official
+  Canadian nutrition pages. Columns:
+
+  `menu_category,name,serving_g,calories,fat_g,protein_g,carbs_g,source,last_verified`
+
+  e.g. `Burger,Big Mac,,,,,,https://www.mcdonalds.com/ca/en-ca/product/big-mac.html,2026-11-14`
+
+To add a chain: add it to `RESTAURANTS` in `build_seed.py` and `CHAINS` in `fetch_osm_locations.py`
+(using its `brand:wikidata` id), then run both scripts.
+
+Location data © OpenStreetMap contributors, ODbL.
