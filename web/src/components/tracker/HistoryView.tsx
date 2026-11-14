@@ -49,15 +49,15 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
         {targets && <p className="text-xs text-gray-500">“Near calorie target” counts logged days within 10% of {targets.calories} cal.</p>}
       </section>
 
-      <section className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-        <table className="w-full min-w-[480px] text-sm">
+      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <table className="w-full text-sm">
           <thead className="border-b border-gray-200 text-gray-500">
             <tr>
               <th className="px-4 py-2 text-left font-medium">Day</th>
               <th className="px-4 py-2 text-right font-medium">Calories</th>
               <th className="px-4 py-2 text-right font-medium">Protein</th>
-              <th className="px-4 py-2 text-right font-medium">Carbs</th>
-              <th className="px-4 py-2 text-right font-medium">Fat</th>
+              <th className="hidden px-4 py-2 text-right font-medium sm:table-cell">Carbs</th>
+              <th className="hidden px-4 py-2 text-right font-medium sm:table-cell">Fat</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -72,11 +72,13 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
                   <>
                     <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.calories)}</td>
                     <td className="px-4 py-2 text-right text-accent-ink tabular-nums">{Math.round(p.protein)} g</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.carbs)} g</td>
-                    <td className="px-4 py-2 text-right tabular-nums">{Math.round(p.fat)} g</td>
+                    <td className="hidden px-4 py-2 text-right tabular-nums sm:table-cell">{Math.round(p.carbs)} g</td>
+                    <td className="hidden px-4 py-2 text-right tabular-nums sm:table-cell">{Math.round(p.fat)} g</td>
                   </>
                 ) : (
-                  <td colSpan={4} className="px-4 py-2 text-right text-gray-400">Nothing logged</td>
+                  <td colSpan={4} className="px-4 py-2 text-right text-gray-400">
+                    Nothing logged
+                  </td>
                 )}
               </tr>
             ))}

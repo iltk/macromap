@@ -44,7 +44,7 @@ export function TrackerPage() {
                 </button>
               ))}
             </div>
-            {!history && (<>
+            {!history && (<span className="flex items-center gap-1">
             <button type="button" onClick={() => go(shiftDay(date, -1))} aria-label="Previous day" className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100">
               <Icon name="arrowBack" className="h-4 w-4" />
             </button>
@@ -63,7 +63,7 @@ export function TrackerPage() {
                 Back to today
               </button>
             )}
-            </>)}
+            </span>)}
           </div>
           <button type="button" onClick={() => openSheet("targets")} className={ui.btn}>
             <Icon name="tune" className="h-4 w-4" />
