@@ -1,35 +1,30 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { Coordinates } from "../types/venues";
 
-interface Coords {
-  latitude: number;
-  longitude: number;
-}
-
+/** Watches the browser position. `coords` stays null until permission is granted. */
 export function useGeolocation() {
-  const [coords, setCoords] = useState<Coords | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [coords, setCoords] = useState<Coordinates | null>(null);
+  const [error, setError] = useState<string | null>(
+    typeof navigator !== "undefined" && !navigator.geolocation
+      ? "Geolocation is not supported by this browser."
+      : null,
+  );
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCoords({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          setLoading(false);
-        },
-        (err) => {
-          setError(err.message);
-          setLoading(false);
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by this browser.");
-      setLoading(false);
-    }
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setError(null);
+      },
+      (err) => setError(err.message),
+      { enableHighAccuracy: false, maximumAge: 60_000, timeout: 15_000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  return { coords, error, loading };
+  return { coords, error };
 }

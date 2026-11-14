@@ -1,20 +1,44 @@
-import type { Venue } from "../types/venues";
+import { isVenueCategory } from "../constants/categories";
+import type { LocationDetails, SearchResponse, Venue, VenueCategory } from "../types/venues";
 
-async function fetchVenues(): Promise<Venue[]> {
-  try {
-    const response = await fetch("/api/restaurants/pins");
+/** The DB may hold free-form categories (e.g. "Japanese"); the map only styles a few. */
+const normalizeCategory = (c: string): VenueCategory => (isVenueCategory(c) ? c : "restaurant");
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = (await response.json()) as Venue[];
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch venues:", error);
-    throw error;
+async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(
+      response.status === 404 ? "Not found" : `Request failed (${response.status})`,
+    );
   }
+  return (await response.json()) as T;
 }
 
-export default fetchVenues;
+export function fetchVenues(signal?: AbortSignal): Promise<Venue[]> {
+  return getJson<Venue[]>("/api/restaurants/pins", signal).then((venues) =>
+    venues.map((v) => ({ ...v, category: normalizeCategory(v.category) })),
+  );
+}
+
+export function fetchLocationDetails(
+  locationId: string,
+  signal?: AbortSignal,
+): Promise<LocationDetails> {
+  return getJson<LocationDetails>(
+    `/api/locations/${encodeURIComponent(locationId)}`,
+    signal,
+  ).then((d) => ({ ...d, category: normalizeCategory(d.category) }));
+}
+
+export function searchPlaces(
+  query: string,
+  signal?: AbortSignal,
+): Promise<SearchResponse> {
+  return getJson<SearchResponse>(
+    `/api/search?q=${encodeURIComponent(query)}`,
+    signal,
+  ).then((r) => ({
+    ...r,
+    restaurants: r.restaurants.map((h) => ({ ...h, category: normalizeCategory(h.category) })),
+  }));
+}
