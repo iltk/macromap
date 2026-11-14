@@ -1,6 +1,7 @@
 package ca.macromap.api.controller;
 
 import ca.macromap.api.dto.LocationDetails;
+import ca.macromap.api.dto.MacroGoal;
 import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
 import ca.macromap.api.dto.RestaurantSummary;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,9 +32,13 @@ public class RestaurantController {
         return restaurantService.getAllPins();
     }
 
+    /** Directory. Optional goal params make {@code matchingItems} count only items that fit. */
     @GetMapping("/restaurants")
-    public List<RestaurantSummary> getAllRestaurants() {
-        return restaurantService.getAllRestaurants();
+    public List<RestaurantSummary> getAllRestaurants(
+            @RequestParam(required = false) Integer maxCalories,
+            @RequestParam(required = false) BigDecimal minProtein,
+            @RequestParam(required = false) BigDecimal maxCarbs) {
+        return restaurantService.getAllRestaurants(new MacroGoal(maxCalories, minProtein, maxCarbs));
     }
 
     @GetMapping("/restaurants/{slug}")

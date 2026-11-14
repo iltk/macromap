@@ -1,6 +1,7 @@
 package ca.macromap.api.service;
 
 import ca.macromap.api.dto.LocationDetails;
+import ca.macromap.api.dto.MacroGoal;
 import ca.macromap.api.dto.MenuItemDto;
 import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
@@ -44,8 +45,9 @@ public class RestaurantService {
         return locationRepository.findAllPins();
     }
 
-    public List<RestaurantSummary> getAllRestaurants() {
-        return restaurantRepository.findAllSummaries();
+    public List<RestaurantSummary> getAllRestaurants(MacroGoal goal) {
+        return restaurantRepository.findAllSummaries(
+                goal.caloriesCeiling(), goal.proteinFloor(), goal.carbsCeiling());
     }
 
     public RestaurantMenu getRestaurantMenu(String slug) {

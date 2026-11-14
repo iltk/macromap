@@ -1,6 +1,7 @@
 package ca.macromap.api.controller;
 
 import ca.macromap.api.dto.LocationDetails;
+import ca.macromap.api.dto.MacroGoal;
 import ca.macromap.api.dto.MenuItemDto;
 import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
@@ -66,14 +67,28 @@ class RestaurantControllerTest {
 
     @Test
     void restaurantDirectoryListsSummaries() throws Exception {
-        when(service.getAllRestaurants()).thenReturn(List.of(
-                new RestaurantSummary(1L, "aw", "A&W", "restaurant", "Burgers", "#e36b0a", 68L, 53L)));
+        when(service.getAllRestaurants(new MacroGoal(null, null, null))).thenReturn(List.of(
+                new RestaurantSummary(1L, "aw", "A&W", "restaurant", "Burgers", "#e36b0a", 68L, 53L,
+                        35, new BigDecimal("56"), 53L)));
 
         mvc.perform(get("/api/restaurants"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].slug").value("aw"))
                 .andExpect(jsonPath("$[0].locationCount").value(68))
-                .andExpect(jsonPath("$[0].menuItemCount").value(53));
+                .andExpect(jsonPath("$[0].lightestCalories").value(35))
+                .andExpect(jsonPath("$[0].matchingItems").value(53));
+    }
+
+    @Test
+    void restaurantDirectoryPassesMacroGoal() throws Exception {
+        MacroGoal goal = new MacroGoal(500, new BigDecimal("30"), null);
+        when(service.getAllRestaurants(goal)).thenReturn(List.of(
+                new RestaurantSummary(1L, "aw", "A&W", "restaurant", null, null, 68L, 53L,
+                        35, new BigDecimal("56"), 4L)));
+
+        mvc.perform(get("/api/restaurants").param("maxCalories", "500").param("minProtein", "30"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].matchingItems").value(4));
     }
 
     @Test
