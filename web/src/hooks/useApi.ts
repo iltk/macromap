@@ -10,7 +10,11 @@ interface Result<T> {
  * Fetches `fetcher` whenever `key` changes (null = don't fetch).
  * Results are keyed so a stale response never shows for a newer key.
  */
-export function useApi<T>(key: string | null, fetcher: (signal: AbortSignal) => Promise<T>) {
+export function useApi<T>(
+  key: string | null,
+  fetcher: (signal: AbortSignal) => Promise<T>,
+  { keepPrevious = false }: { keepPrevious?: boolean } = {},
+) {
   const [result, setResult] = useState<Result<T> | null>(null);
   const [attempt, setAttempt] = useState(0);
 
@@ -30,7 +34,8 @@ export function useApi<T>(key: string | null, fetcher: (signal: AbortSignal) => 
 
   const current = result && result.key === key ? result : null;
   return {
-    data: current?.data ?? null,
+    // keepPrevious: show the last result while a new key loads (avoids flashing skeletons)
+    data: current?.data ?? (keepPrevious ? (result?.data ?? null) : null),
     error: current?.error ?? null,
     isLoading: key !== null && !current,
     retry: () => {

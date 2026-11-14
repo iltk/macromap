@@ -85,6 +85,10 @@ export interface RestaurantSummary {
   brandColor: string | null;
   locationCount: number;
   menuItemCount: number;
+  lightestCalories: number | null;
+  topProtein: number | null;
+  /** Items that fit the requested goal (or all items with full macros when no goal). */
+  matchingItems: number;
 }
 
 /** Mirrors api RestaurantMenu. */

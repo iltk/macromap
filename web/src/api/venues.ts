@@ -50,8 +50,12 @@ export function searchPlaces(
   }));
 }
 
-export function fetchRestaurants(signal?: AbortSignal): Promise<RestaurantSummary[]> {
-  return getJson<RestaurantSummary[]>("/api/restaurants", signal).then((rs) =>
+export function fetchRestaurants(
+  goalQuery: string,
+  signal?: AbortSignal,
+): Promise<RestaurantSummary[]> {
+  const qs = goalQuery ? `?${goalQuery}` : "";
+  return getJson<RestaurantSummary[]>(`/api/restaurants${qs}`, signal).then((rs) =>
     rs.map((r) => ({ ...r, category: normalizeCategory(r.category) })),
   );
 }
