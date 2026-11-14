@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import Map, {
   AttributionControl,
   Layer,
@@ -15,7 +15,8 @@ import { TORONTO } from "../../utils/geo";
 import { UserPositionMarker } from "../markers/UserPositionMarker";
 import { Icon } from "../ui/icons";
 import { MAP_STYLES, type MapStyleId } from "./mapStyles";
-import { registerPinImages } from "./pinImages";
+import { registerPinImages, type PinBrand } from "./pinImages";
+import { brandColorFor, initialsFor } from "../../utils/brand";
 import {
   INTERACTIVE_LAYERS,
   SELECTED_SOURCE,
@@ -74,11 +75,24 @@ export function MapContainer({
     () => toFeatureCollection(selectedVenue ? [selectedVenue] : []),
     [selectedVenue],
   );
+  // slug -> brand, read lazily by the pin image handler (venues load after the map mounts)
+  const brands = useRef(new globalThis.Map<string, PinBrand>());
+  useEffect(() => {
+    for (const v of venues) {
+      if (!brands.current.has(v.slug)) {
+        brands.current.set(v.slug, {
+          color: brandColorFor(v.brandColor, v.category),
+          initials: initialsFor(v.name),
+        });
+      }
+    }
+  }, [venues]);
+
   // Callback ref: hook up pin images the moment the map exists, before any layer asks for them.
   const attachMap = useCallback(
     (instance: MapRef | null) => {
       mapRef.current = instance;
-      if (instance) registerPinImages(instance.getMap());
+      if (instance) registerPinImages(instance.getMap(), (slug) => brands.current.get(slug));
     },
     [mapRef],
   );

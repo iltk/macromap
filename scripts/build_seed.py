@@ -29,7 +29,7 @@ RESTAURANTS = [
     ("aw", "A&W", "restaurant", "https://web.aw.ca/",
      "Burgers, breakfast sandwiches, poutine and root beer", "#e36b0a"),
     ("mcdonalds", "McDonald's", "restaurant", "https://www.mcdonalds.com/ca/en-ca.html",
-     "Burgers, chicken, fries and all-day breakfast", "#da291c"),
+     "Burgers, chicken, fries and all-day breakfast", "#ffbc0d"),
     ("tim-hortons", "Tim Hortons", "cafe", "https://www.timhortons.ca/",
      "Coffee, breakfast sandwiches, wraps, soups and Timbits", "#c8102e"),
 ]

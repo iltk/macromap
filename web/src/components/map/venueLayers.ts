@@ -45,8 +45,8 @@ export const clusterCountLayer: SymbolLayerSpecification = {
 
 const pinLayout = (selected: boolean): SymbolLayerSpecification["layout"] => ({
   "icon-image": selected
-    ? ["concat", "pin-", ["get", "category"], "-selected"]
-    : ["concat", "pin-", ["get", "category"]],
+    ? ["concat", "pin-", ["get", "slug"], "-selected"]
+    : ["concat", "pin-", ["get", "slug"]],
   "icon-anchor": "bottom",
   "icon-size": selected ? 1.3 : 1,
   "icon-allow-overlap": true,

@@ -7,8 +7,11 @@ export interface Venue {
   slug: string;
   name: string;
   category: VenueCategory;
+  brandColor: string | null;
   latitude: number;
   longitude: number;
+  /** Raw OpenStreetMap opening_hours; null when unknown. */
+  openingHours: string | null;
 }
 
 export interface MenuItem {
@@ -21,6 +24,8 @@ export interface MenuItem {
   carbs: number | null;
   fat: number | null;
   source: string | null;
+  /** Allergen codes; null = unknown (no data), [] = verified none. */
+  allergens: string[] | null;
 }
 
 /** Mirrors api LocationDetails. */

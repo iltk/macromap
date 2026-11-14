@@ -1,26 +1,25 @@
 import type { Map as MaplibreMap } from "maplibre-gl";
-import {
-  CATEGORY_COLORS,
-  CATEGORY_ICON_PATHS,
-  PIN_PATH,
-  SELECTED_COLOR,
-  isVenueCategory,
-} from "../../constants/categories";
+import { PIN_PATH, SELECTED_COLOR } from "../../constants/categories";
+import { readableOnWhite } from "../../utils/brand";
 
 const PIXEL_RATIO = 2;
 const W = 32;
 const H = 42;
 
+export interface PinBrand {
+  color: string;
+  initials: string;
+}
+
 /**
- * Draws a teardrop pin with the category glyph. Synchronous (canvas + Path2D),
- * so it can run inside MapLibre's `styleimagemissing` handler, which also
- * re-creates the images after the map style is switched.
+ * Draws a teardrop pin in the chain's brand colour with its initials in a white disc.
+ * Synchronous (canvas), so it can run inside MapLibre's `styleimagemissing` handler,
+ * which also re-creates images after the map style changes (e.g. dark mode).
  *
- * Image ids: `pin-<category>` and `pin-<category>-selected`.
+ * Image ids: `pin-<slug>` and `pin-<slug>-selected`.
  */
-function drawPin(category: string, selected: boolean): ImageData | null {
-  if (!isVenueCategory(category)) return null;
-  const color = selected ? SELECTED_COLOR : CATEGORY_COLORS[category];
+function drawPin(brand: PinBrand, selected: boolean): ImageData | null {
+  const color = selected ? SELECTED_COLOR : brand.color;
   const canvas = document.createElement("canvas");
   canvas.width = W * PIXEL_RATIO;
   canvas.height = H * PIXEL_RATIO;
@@ -28,7 +27,6 @@ function drawPin(category: string, selected: boolean): ImageData | null {
   if (!ctx) return null;
   ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
 
-  // body (slightly inset so the drop shadow isn't clipped)
   ctx.save();
   ctx.translate(2, 1);
   ctx.scale(28 / 32, 39 / 42);
@@ -39,33 +37,33 @@ function drawPin(category: string, selected: boolean): ImageData | null {
   ctx.fill(new Path2D(PIN_PATH));
   ctx.restore();
 
-  // white disc
   ctx.beginPath();
-  ctx.arc(16, 15, 9.5, 0, Math.PI * 2);
+  ctx.arc(16, 15, 10, 0, Math.PI * 2);
   ctx.fillStyle = "#ffffff";
   ctx.fill();
 
-  // glyph, 13px centred on the disc
-  ctx.save();
-  ctx.translate(16 - 6.5, 15 - 6.5);
-  ctx.scale(13 / 24, 13 / 24);
-  ctx.fillStyle = color;
-  ctx.fill(new Path2D(CATEGORY_ICON_PATHS[category]));
-  ctx.restore();
+  const text = brand.initials;
+  const size = text.length >= 3 ? 7.5 : text.length === 2 ? 9 : 11;
+  ctx.font = `800 ${size}px Roboto, "Helvetica Neue", Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = readableOnWhite(color);
+  ctx.fillText(text, 16, 15.5, 18);
 
   return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
 const registered = new WeakSet<MaplibreMap>();
+const FALLBACK: PinBrand = { color: "#5f6368", initials: "•" };
 
 /** Idempotent; call as soon as the map instance exists (before its style finishes loading). */
-export function registerPinImages(map: MaplibreMap) {
+export function registerPinImages(map: MaplibreMap, brandFor: (slug: string) => PinBrand | undefined) {
   if (registered.has(map)) return;
   registered.add(map);
   map.on("styleimagemissing", (e: { id: string }) => {
-    const m = /^pin-([a-z]+)(-selected)?$/.exec(e.id);
+    const m = /^pin-(.+?)(-selected)?$/.exec(e.id);
     if (!m || map.hasImage(e.id)) return;
-    const img = drawPin(m[1], Boolean(m[2]));
+    const img = drawPin(brandFor(m[1]) ?? FALLBACK, Boolean(m[2]));
     if (img) map.addImage(e.id, img, { pixelRatio: PIXEL_RATIO });
   });
 }
