@@ -41,12 +41,13 @@ public class SuggestionController {
             @RequestParam(required = false, defaultValue = "5") double radiusKm,
             @RequestParam(required = false) String restaurant,
             @RequestParam(required = false, defaultValue = "8") int limit,
-            @RequestParam(required = false) String meal) {
+            @RequestParam(required = false) String meal,
+            @RequestParam(required = false, defaultValue = "") String mode) {
         Set<String> avoidSet = Arrays.stream(avoid.split(","))
                 .map(a -> a.strip().toLowerCase(Locale.ROOT)).filter(a -> !a.isEmpty()).collect(Collectors.toSet());
         return service.suggest(new SuggestionQuery(
                 new Remaining(calories, protein, carbs, fat, MealTime.parse(meal)), avoidSet, lat, lng,
                 Math.max(0.2, Math.min(radiusKm, 50)), restaurant == null || restaurant.isBlank() ? null : restaurant,
-                Math.max(1, Math.min(limit, 30))));
+                Math.max(1, Math.min(limit, 30)), "protein".equalsIgnoreCase(mode)));
     }
 }

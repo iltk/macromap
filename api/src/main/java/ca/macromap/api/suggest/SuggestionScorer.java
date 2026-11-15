@@ -88,6 +88,18 @@ public final class SuggestionScorer {
         return Math.min(0.4, 0.3 * over / Math.max(10, Math.abs(remaining)));
     }
 
+    /**
+     * "Fill my protein" score: items that cover the remaining protein rank first, fewest calories
+     * first; the rest rank by protein per calorie. Higher is better.
+     */
+    public static double topUpScore(MenuItem m, double proteinLeft) {
+        double protein = m.getProtein() == null ? 0 : m.getProtein().doubleValue();
+        double cal = Math.max(1, m.getCalories());
+        if (protein <= 0) return 0;
+        if (protein >= proteinLeft * 0.9) return 2 - cal / 2000.0; // covers it: cheaper is better (1..2)
+        return Math.min(0.99, protein / cal * 10);                  // partial: protein per calorie (0..1)
+    }
+
     /** "Teen Burger (Lettuce-Wrapped)" and "Teen Burger" are the same dish for combo purposes. */
     public static String baseName(String name) {
         return name.replaceAll("\\s*\\(.*\\)\\s*$", "").strip().toLowerCase(Locale.ROOT);

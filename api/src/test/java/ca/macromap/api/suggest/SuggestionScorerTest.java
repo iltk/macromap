@@ -127,4 +127,21 @@ class SuggestionScorerTest {
         assertThat(MealTime.parse("brunch")).isNull();
         assertThat(MealTime.parse(null)).isNull();
     }
+
+    @Test
+    void topUpPrefersTheLightestItemThatCoversTheGap() {
+        MenuItem light = item("Chicken strips", "Chicken", 300, 22, 15, 12);
+        MenuItem heavy = item("Grandpa Burger", "Burger", 760, 53, 35, 58);
+        MenuItem partial = item("Hash brown", "Side", 180, 2, 18, 11);
+        double gap = 20;
+        assertThat(SuggestionScorer.topUpScore(light, gap)).isGreaterThan(SuggestionScorer.topUpScore(heavy, gap));
+        assertThat(SuggestionScorer.topUpScore(heavy, gap)).isGreaterThan(SuggestionScorer.topUpScore(partial, gap));
+    }
+
+    @Test
+    void topUpRanksPartialItemsByProteinPerCalorie() {
+        MenuItem lean = item("Egg whites", "Breakfast", 100, 12, 1, 1);
+        MenuItem fatty = item("Cheese bites", "Side", 300, 12, 10, 25);
+        assertThat(SuggestionScorer.topUpScore(lean, 60)).isGreaterThan(SuggestionScorer.topUpScore(fatty, 60));
+    }
 }

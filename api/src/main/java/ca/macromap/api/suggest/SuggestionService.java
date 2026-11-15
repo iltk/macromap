@@ -45,6 +45,9 @@ public class SuggestionService {
             return new SuggestionResponse(List.of(), List.of()); // the day's calories are used up
         }
 
+        if (q.proteinTopUp() && (r.protein() == null || r.protein() <= 0)) {
+            return new SuggestionResponse(List.of(), List.of()); // protein target already reached
+        }
         Map<Long, List<NearbyLocation>> nearby = q.lat() != null && q.lng() != null ? nearbyByChain(q) : null;
 
         Map<Restaurant, List<MenuItem>> byChain = menuItems.findAllWithRestaurant().stream()
@@ -62,9 +65,13 @@ public class SuggestionService {
 
             for (MenuItem m : menu) {
                 if (SuggestionScorer.fitsCalories(m.getCalories(), r)) {
-                    items.add(new ItemSuggestion(MenuItemDto.from(m), ref, round(SuggestionScorer.score(List.of(m), r)), locs));
+                    double score = q.proteinTopUp()
+                            ? SuggestionScorer.topUpScore(m, r.protein())
+                            : SuggestionScorer.score(List.of(m), r);
+                    if (score > 0) items.add(new ItemSuggestion(MenuItemDto.from(m), ref, round(score), locs));
                 }
             }
+            if (q.proteinTopUp()) return; // single items only
 
             List<ComboSuggestion> chainCombos = new ArrayList<>();
             for (int i = 0; i < menu.size(); i++) {
