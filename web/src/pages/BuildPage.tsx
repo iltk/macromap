@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { fetchRestaurantMenu, fetchRestaurants } from "../api/venues";
 import { OrderReceipt } from "../components/build/OrderReceipt";
+import { SavedOrders } from "../components/build/SavedOrders";
 import { SiteHeader } from "../components/layout/SiteHeader";
 import { FoodImage } from "../components/media/FoodImage";
 import { AllergenNotice } from "../components/restaurants/AllergenNotice";
@@ -17,6 +18,7 @@ import { PrefsNote } from "../components/ui/PrefsNote";
 import type { MenuItem, RestaurantMenu, RestaurantSummary } from "../types/venues";
 import { needsCheck } from "../utils/macros";
 import { DEFAULT_QUERY, menuSections, queryMenu } from "../utils/menuQuery";
+import { EmptyState } from "../components/ui/EmptyState";
 
 export function BuildPage() {
   const [params, setParams] = useSearchParams();
@@ -48,7 +50,10 @@ export function BuildPage() {
         <p className="mt-1 text-gray-600">Put together an order and watch the calories and macros add up before you buy.</p>
 
         {!slug ? (
+          <>
+          <SavedOrdersSection />
           <RestaurantPicker restaurants={restaurants.data} loading={restaurants.isLoading} onChoose={choose} />
+          </>
         ) : (
           <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
             <div className="min-w-0">
@@ -102,6 +107,17 @@ export function BuildPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SavedOrdersSection() {
+  const { savedOrders } = useTracker();
+  if (savedOrders.length === 0) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="mb-3 text-base font-semibold text-gray-900">Your saved orders</h2>
+      <SavedOrders />
+    </section>
   );
 }
 
@@ -230,7 +246,7 @@ function MenuPicker({ restaurant, restaurants, onChange }: { restaurant: Restaur
       </div>
 
       {result.items.length === 0 ? (
-        <p className="py-8 text-sm text-gray-600">Nothing matches.</p>
+        <EmptyState size="sm" art="plate" title="Nothing matches" text="Try another section or clear the search." />
       ) : (
         <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {result.items.map((m) => {
@@ -238,7 +254,7 @@ function MenuPicker({ restaurant, restaurants, onChange }: { restaurant: Restaur
             const tray = toTrayItem(m, restaurant.name, restaurant.slug);
             return (
               <li key={m.id} className={`flex items-center gap-3 rounded-lg border bg-white p-2.5 ${qty ? "border-accent" : "border-gray-200"}`}>
-                <FoodImage src={m.imageUrl} alt={m.name} tintKey={m.menuCategory ?? ""} variant="thumb" className="h-14 w-14 shrink-0 rounded-md" />
+                <FoodImage section={m.menuCategory} src={m.imageUrl} alt={m.name} tintKey={m.menuCategory ?? ""} variant="thumb" className="h-14 w-14 shrink-0 rounded-md" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm leading-snug font-medium text-gray-900">
                     {m.name}

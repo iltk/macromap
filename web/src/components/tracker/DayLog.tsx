@@ -5,21 +5,26 @@ import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
+import { EmptyState } from "../ui/EmptyState";
 
 export function DayLog({ date, entries }: { date: string; entries: LogEntry[] }) {
   if (entries.length === 0) {
     return (
-      <section className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
-        <p className="font-medium text-gray-900">Nothing logged yet</p>
-        <p className="mt-1 text-sm text-gray-600">Tap “Add” on any menu item to log it here.</p>
-        <div className="mt-4 flex justify-center gap-2">
-          <Link to="/" className={ui.btn}>
-            Find food nearby
-          </Link>
-          <Link to="/restaurants" className={ui.btn}>
-            Browse menus
-          </Link>
-        </div>
+      <section className="rounded-xl border border-dashed border-gray-300 bg-white">
+        <EmptyState
+          title="Nothing logged yet"
+          text="Tap “Add” on any menu item, or use Quick add, to log what you eat."
+          action={
+            <>
+              <Link to="/" className={ui.btnPrimary}>
+                Find food nearby
+              </Link>
+              <Link to="/build" className={ui.btn}>
+                Build a meal
+              </Link>
+            </>
+          }
+        />
       </section>
     );
   }

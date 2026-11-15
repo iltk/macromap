@@ -77,6 +77,8 @@ export interface SuggestionParams {
   lng?: number;
   restaurant?: string;
   limit?: number;
+  /** breakfast | lunch | dinner | snack: suggestions fit the meal */
+  meal?: string;
 }
 
 /** Turns params into a stable query string (also used as a cache key). */
@@ -93,6 +95,7 @@ export function suggestionQuery(p: SuggestionParams): string {
   }
   if (p.restaurant) q.set("restaurant", p.restaurant);
   if (p.limit) q.set("limit", String(p.limit));
+  if (p.meal) q.set("meal", p.meal);
   return q.toString();
 }
 

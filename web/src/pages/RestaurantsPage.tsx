@@ -12,6 +12,7 @@ import { PrefsNote } from "../components/ui/PrefsNote";
 import { openSheet } from "../stores/ui";
 import type { RestaurantSummary } from "../types/venues";
 import { limitsToQuery } from "../utils/goals";
+import { EmptyState } from "../components/ui/EmptyState";
 
 type SortKey = "match" | "az" | "locations";
 
@@ -121,7 +122,18 @@ export function RestaurantsPage() {
               ))}
             </ul>
           ) : visible.length === 0 ? (
-            <p className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">No restaurants match “{query.trim()}”.</p>
+            <div className="rounded-lg border border-gray-200 bg-white">
+              <EmptyState
+                art="plate"
+                title={`No restaurants match “${query.trim()}”`}
+                text={dishHits.length ? "But some dishes do. See them above." : "Check the spelling, or search for a dish instead."}
+                action={
+                  <button type="button" onClick={() => setQuery("")} className={ui.btn}>
+                    Clear search
+                  </button>
+                }
+              />
+            </div>
           ) : (
             <ul className={`grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 ${isLoading ? "opacity-70" : ""}`}>
               {visible.map((r) => (

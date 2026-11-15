@@ -6,7 +6,7 @@ import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNow } from "../../hooks/useNow";
 import { notify } from "../../stores/notify";
 import { usePrefs } from "../../stores/prefs";
-import { logItem, type Totals } from "../../stores/tracker";
+import { logItem, slotForTime, SLOT_LABELS, SLOTS, type MealSlot, type Totals } from "../../stores/tracker";
 import { toTrayItem } from "../../stores/tray";
 import type { MenuItem, SuggestionLocation, SuggestionRestaurant } from "../../types/venues";
 import { formatDistance } from "../../utils/geo";
@@ -15,6 +15,7 @@ import type { DailyTarget } from "../../utils/targets";
 import { FoodImage } from "../media/FoodImage";
 import { logWithNotice } from "../tray/logWithNotice";
 import { ui } from "../ui/styles";
+import { EmptyState } from "../ui/EmptyState";
 
 type Tab = "items" | "combos";
 
@@ -36,6 +37,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
   const [nearMe, setNearMe] = useState(true);
   const [openNow, setOpenNow] = useState(false);
   const [restaurant, setRestaurant] = useState("");
+  const [meal, setMeal] = useState<MealSlot>(() => slotForTime());
   const restaurants = useApi("restaurants?", (signal) => fetchRestaurants("", signal));
 
   const left = {
@@ -59,6 +61,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
         lng: useLocation ? coords!.lng : undefined,
         restaurant: restaurant || undefined,
         limit: 12,
+        meal,
       });
   const { data, error, isLoading, retry } = useApi(query, (signal) => fetchSuggestions(query!, signal), { keepPrevious: true });
 
@@ -105,7 +108,21 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
     <section className="rounded-xl border border-gray-200 bg-white">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-3">
         <div>
-          <h2 className="text-sm font-semibold text-gray-900">What to eat next</h2>
+          <h2 className="text-sm font-semibold text-gray-900">
+            What to eat for{" "}
+            <select
+              value={meal}
+              onChange={(e) => setMeal(e.target.value as MealSlot)}
+              aria-label="Meal"
+              className="rounded border-0 bg-transparent p-0 pr-5 font-semibold text-link underline decoration-dotted underline-offset-4 outline-none"
+            >
+              {SLOTS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "snack" ? "a snack" : SLOT_LABELS[s].toLowerCase()}
+                </option>
+              ))}
+            </select>
+          </h2>
           <p className="text-xs text-gray-500 tabular-nums">
             For {Math.max(0, Math.round(left.calories))} cal and {Math.max(0, Math.round(left.protein))} g protein left
             {prefs.avoid.length > 0 && ", avoiding your allergens"}
@@ -128,7 +145,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
       </header>
 
       {done ? (
-        <p className="px-4 py-5 text-sm text-gray-600">You've reached today's calorie target. Nice work.</p>
+        <EmptyState size="sm" art="plate" title="You've reached today's target" text="Nice work. Suggestions come back tomorrow, or raise your targets if you need more." />
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-4 py-2.5">
@@ -167,9 +184,27 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <p className="px-4 py-5 text-sm text-gray-600">
-              Nothing fits right now. {useLocation ? "Try turning off “Near me” or “Open now”." : "Try another restaurant."}
-            </p>
+            <EmptyState
+              size="sm"
+              art="burger"
+              title="Nothing fits right now"
+              text={useLocation ? "Nearby menus don't have anything within what's left. Widen the search to see more." : "Try another restaurant or meal."}
+              action={
+                useLocation || openNow || restaurant ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNearMe(false);
+                      setOpenNow(false);
+                      setRestaurant("");
+                    }}
+                    className={ui.btnSmall}
+                  >
+                    Search everywhere
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <ul className={`divide-y divide-gray-100 ${isLoading ? "opacity-60" : ""}`}>
               {rows.map((r) => {
@@ -179,7 +214,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
                   <li key={r.key} className="flex gap-3 px-4 py-3">
                     <div className="flex shrink-0 -space-x-3">
                       {r.items.map((m) => (
-                        <FoodImage key={m.id} src={m.imageUrl} alt={m.name} tintKey={m.menuCategory ?? ""} variant="thumb" className="h-12 w-12 rounded-md border-2 border-white" />
+                        <FoodImage section={m.menuCategory} key={m.id} src={m.imageUrl} alt={m.name} tintKey={m.menuCategory ?? ""} variant="thumb" className="h-12 w-12 rounded-md border-2 border-white" />
                       ))}
                     </div>
                     <div className="min-w-0 flex-1">

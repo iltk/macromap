@@ -12,6 +12,7 @@ import { proteinDensity } from "../../utils/macros";
 import { RangeField } from "../restaurants/RangeField";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
+import { EmptyState } from "../ui/EmptyState";
 
 /** Right-hand sheets (preferences, meal, compare). Mounted once for the whole app. */
 export function Sheets() {
@@ -200,9 +201,12 @@ function CompareSheet() {
 
   return (
     <div className="flex-1 overflow-y-auto px-5 py-4">
-      {compare.length < 2 && (
+      {compare.length === 0 && (
+        <EmptyState size="sm" art="burger" title="Nothing to compare yet" text="Tap “Compare” on two menu items to see them side by side." />
+      )}
+      {compare.length === 1 && (
         <p className="mb-4 text-sm text-gray-600">
-          Choose {compare.length === 0 ? "two items" : "one more item"} with <span className="font-semibold">Compare</span> on any menu.
+          Choose one more item with <span className="font-semibold">Compare</span> on any menu.
         </p>
       )}
       {compare.length > 0 && (

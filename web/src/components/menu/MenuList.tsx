@@ -61,7 +61,7 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
             <ul className="divide-y divide-gray-200">
               {g.items.map((m) => (
                 <li key={m.id} ref={refFor(m.id)} className={`flex gap-3 px-4 py-3 ${m.id === focusItemId ? "bg-accent-soft" : ""}`}>
-                  <FoodImage src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-14 w-14 shrink-0 rounded-md border border-gray-200" />
+                  <FoodImage section={m.menuCategory} src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-14 w-14 shrink-0 rounded-md border border-gray-200" />
                   <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="text-sm font-medium text-gray-900">
@@ -154,7 +154,7 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
                 <tr key={m.id} ref={refFor(m.id)} className={m.id === focusItemId ? "bg-accent-soft" : "hover:bg-row-hover"}>
                   <td className="px-3 py-2">
                     <span className="flex items-center gap-3">
-                    <FoodImage src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-10 w-10 shrink-0 rounded border border-gray-200" />
+                    <FoodImage section={m.menuCategory} src={m.imageUrl} alt={m.name} tintKey={sectionOf(m)} variant="thumb" className="h-10 w-10 shrink-0 rounded border border-gray-200" />
                     <span className="min-w-0">
                     <span className="font-medium text-gray-900">
                       {m.name}

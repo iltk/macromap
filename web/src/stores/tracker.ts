@@ -35,9 +35,18 @@ interface TrackerState {
   favorites: TrayItem[];
   /** Foods the viewer entered by hand (not on any menu). */
   customFoods: TrayItem[];
+  /** Named orders to re-log or rebuild in one tap ("My usual at A&W"). */
+  savedOrders: SavedOrder[];
 }
 
-const EMPTY: TrackerState = { days: {}, plan: [], targets: null, profile: null, favorites: [], customFoods: [] };
+export interface SavedOrder {
+  id: string;
+  name: string;
+  items: PlanEntry[];
+  createdAt: string;
+}
+
+const EMPTY: TrackerState = { days: {}, plan: [], targets: null, profile: null, favorites: [], customFoods: [], savedOrders: [] };
 
 const KEY = "macromap.tracker.v1";
 
@@ -204,3 +213,30 @@ export const removeCustomFood = (id: string) =>
 export const trackerSnapshot = () => store.get();
 /** Puts back a snapshot taken with trackerSnapshot(). */
 export const restoreTracker = (snapshot: TrackerState) => store.set(snapshot);
+
+/* ---------- saved orders ---------- */
+
+/** Saves the current plan under a name; returns the saved order. */
+export function saveOrder(name: string): SavedOrder | null {
+  let saved: SavedOrder | null = null;
+  store.set((s) => {
+    if (!s.plan.length) return s;
+    saved = { id: newId(), name: name.trim() || "My order", items: s.plan.map((p) => ({ ...p })), createdAt: new Date().toISOString() };
+    return { ...s, savedOrders: [saved, ...s.savedOrders] };
+  });
+  return saved;
+}
+
+/** Logs every item of a saved order to `date` (default today) in one go. */
+export function logSavedOrder(order: SavedOrder, opts: { date?: string; slot?: MealSlot } = {}) {
+  const now = new Date();
+  const date = opts.date ?? dayKey(now);
+  const slot = opts.slot ?? slotForTime(now);
+  const added: LogEntry[] = order.items.map((p) => ({ id: newId(), item: p.item, qty: p.qty, slot, addedAt: now.toISOString() }));
+  store.set((s) => ({ ...s, days: { ...s.days, [date]: [...(s.days[date] ?? []), ...added] } }));
+}
+
+/** Replaces the plan with a saved order, to tweak it in the builder. */
+export const loadOrderIntoPlan = (order: SavedOrder) => store.set((s) => ({ ...s, plan: order.items.map((p) => ({ ...p })) }));
+
+export const deleteSavedOrder = (id: string) => store.set((s) => ({ ...s, savedOrders: s.savedOrders.filter((o) => o.id !== id) }));

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Icon } from "../ui/icons";
+import { foodKind } from "../../utils/foodKind";
+import { FoodGlyph } from "./FoodGlyph";
 
-// Soft, warm tints so a menu full of placeholders still has some rhythm.
+// Soft, warm tints so a menu full of placeholders still has some rhythm (keyed by food kind).
 const TINTS = ["#efe6d6", "#e4eadf", "#ede2dd", "#e1e7eb", "#ebe6d2", "#e6e1ea"];
 
 function tintFor(key: string) {
@@ -22,6 +23,7 @@ export function FoodImage({
   alt,
   tintKey,
   variant,
+  section,
   className = "",
 }: {
   src: string | null | undefined;
@@ -29,10 +31,13 @@ export function FoodImage({
   /** e.g. the menu section, so items in one section share a tint */
   tintKey: string;
   variant: "card" | "thumb";
+  /** menu section, to help pick the placeholder drawing */
+  section?: string | null;
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  const tint = tintFor(tintKey);
+  const kind = foodKind(alt, section);
+  const tint = tintFor(kind + tintKey);
 
   if (src && !failed) {
     return (
@@ -52,7 +57,7 @@ export function FoodImage({
     return (
       <div role="img" aria-label={`${alt} (photo coming soon)`} className={`relative flex items-center justify-center overflow-hidden ${className}`} style={{ background: tint }}>
         <span className="absolute inset-0 hidden bg-gray-100/70 dark:block" />
-        <Icon name="restaurant" className="relative h-4 w-4 text-black/25 dark:text-white/30" />
+        <FoodGlyph kind={kind} className="relative h-[60%] w-[60%] text-black/45 dark:text-white/50" />
       </div>
     );
   }
@@ -61,7 +66,7 @@ export function FoodImage({
     <div role="img" aria-label={`${alt} (photo coming soon)`} className={`flex items-center justify-center bg-white ${className}`}>
       <div className="relative flex aspect-square w-[42%] items-center justify-center overflow-hidden rounded-full" style={{ background: tint }}>
         <span className="absolute inset-0 hidden bg-gray-100/70 dark:block" />
-        <Icon name="restaurant" className="relative h-1/3 w-1/3 text-black/20 dark:text-white/25" />
+        <FoodGlyph kind={kind} className="relative h-1/2 w-1/2 text-black/40 dark:text-white/45" />
       </div>
     </div>
   );

@@ -6,8 +6,10 @@ import { recentItems } from "../../utils/history";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
+import { SavedOrders } from "../build/SavedOrders";
+import { EmptyState } from "../ui/EmptyState";
 
-type Tab = "recent" | "favorites" | "mine";
+type Tab = "recent" | "favorites" | "mine" | "orders";
 
 /** Re-log recent or starred items, and add foods that aren't on any menu. */
 export function QuickAdd({ date }: { date: string }) {
@@ -15,7 +17,7 @@ export function QuickAdd({ date }: { date: string }) {
   const [tab, setTab] = useState<Tab>("recent");
   const [form, setForm] = useState(false);
   const recents = useMemo(() => recentItems(days), [days]);
-  const list = tab === "recent" ? recents : tab === "favorites" ? favorites : customFoods;
+  const list = tab === "recent" ? recents : tab === "favorites" ? favorites : tab === "mine" ? customFoods : [];
   const isFav = (id: string) => favorites.some((f) => f.id === id);
   const log = (item: TrayItem) => {
     logItem(item, { date, slot: slotForTime() });
@@ -40,6 +42,7 @@ export function QuickAdd({ date }: { date: string }) {
                 ["recent", "Recent"],
                 ["favorites", "Starred"],
                 ["mine", "My foods"],
+                ["orders", "Orders"],
               ] as const
             ).map(([k, label]) => (
               <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`-mb-px border-b-2 py-2 text-sm ${tab === k ? "border-gray-900 font-semibold text-gray-900" : "border-transparent text-gray-600"}`}>
@@ -47,10 +50,22 @@ export function QuickAdd({ date }: { date: string }) {
               </button>
             ))}
           </div>
-          {list.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-gray-500">
-              {tab === "recent" ? "Items you log show up here." : tab === "favorites" ? "Star items to keep them here." : "Foods you add by hand show up here."}
-            </p>
+          {tab === "orders" ? (
+            <SavedOrders compact emptyText="Save an order in Build to re-log it here in one tap." />
+          ) : list.length === 0 ? (
+            <EmptyState
+              size="sm"
+              art={tab === "mine" ? "salad" : "plate"}
+              title={tab === "recent" ? "No recent items" : tab === "favorites" ? "Nothing starred" : "No foods of your own"}
+              text={tab === "recent" ? "Items you log show up here for quick re-logging." : tab === "favorites" ? "Tap the bookmark next to an item to keep it here." : "Add something that isn't on a menu, like home cooking."}
+              action={
+                tab === "mine" ? (
+                  <button type="button" onClick={() => setForm(true)} className={ui.btnSmall}>
+                    Add a custom food
+                  </button>
+                ) : undefined
+              }
+            />
           ) : (
             <ul className="max-h-80 divide-y divide-gray-100 overflow-y-auto">
               {list.map((item) => (

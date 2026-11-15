@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { notify } from "../../stores/notify";
-import { clearPlan, logPlan, setPlanQty, addToPlan, slotForTime, SLOT_LABELS, SLOTS, totalsOf, useToday, useTracker, type MealSlot } from "../../stores/tracker";
+import { clearPlan, logPlan, saveOrder, setPlanQty, addToPlan, slotForTime, SLOT_LABELS, SLOTS, totalsOf, useToday, useTracker, type MealSlot } from "../../stores/tracker";
 import { toTrayItem } from "../../stores/tray";
 import type { MenuItem } from "../../types/venues";
 import { dayKey } from "../../utils/dates";
@@ -10,6 +10,7 @@ import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
+import { EmptyState } from "../ui/EmptyState";
 
 const r = Math.round;
 
@@ -18,6 +19,7 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
   const { plan } = useTracker();
   const today = useToday();
   const [slot, setSlot] = useState<MealSlot>(() => slotForTime());
+  const [naming, setNaming] = useState<string | null>(null);
   const t = totalsOf(plan);
   const kcalP = t.protein * 4, kcalC = t.carbs * 4, kcalF = t.fat * 9;
   const kcalSum = Math.max(1, kcalP + kcalC + kcalF);
@@ -35,10 +37,7 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
 
   if (plan.length === 0) {
     return (
-      <div className="px-5 py-8 text-center">
-        <p className="font-medium text-gray-900">Your order is empty</p>
-        <p className="mt-1 text-sm text-gray-500">Add items from the menu. Totals update as you go.</p>
-      </div>
+      <EmptyState art="burger" size="sm" title="Your order is empty" text="Tap + on menu items. Calories and macros add up here as you go." />
     );
   }
 
@@ -156,7 +155,29 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
             Log to tracker
           </button>
         </div>
+        {naming !== null ? (
+          <form
+            className="mt-3 flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const saved = saveOrder(naming);
+              setNaming(null);
+              if (saved) notify(`Saved “${saved.name}”. Find it in Build and Quick add`);
+            }}
+          >
+            <input autoFocus value={naming} onChange={(e) => setNaming(e.target.value)} aria-label="Order name" className={`${ui.input} h-8`} />
+            <button type="submit" className={`${ui.btnSmall} shrink-0`}>
+              Save
+            </button>
+            <button type="button" onClick={() => setNaming(null)} className="shrink-0 text-sm text-gray-600">
+              Cancel
+            </button>
+          </form>
+        ) : null}
         <div className="mt-3 flex gap-4 text-sm">
+          <button type="button" onClick={() => setNaming(`My usual at ${plan[0].item.restaurantName}`)} className={ui.link}>
+            Save order
+          </button>
           <button type="button" onClick={copy} className={ui.link}>
             Copy order
           </button>

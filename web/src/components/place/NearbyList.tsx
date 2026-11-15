@@ -11,6 +11,7 @@ import { Icon } from "../ui/icons";
 import { PrefsNote } from "../ui/PrefsNote";
 import { logWithNotice } from "../tray/logWithNotice";
 import { toTrayItem } from "../../stores/tray";
+import { EmptyState } from "../ui/EmptyState";
 
 const MAX_RESULTS = 30;
 const RADII_M = [1000, 2000, 4000, 8000, 20000];
@@ -87,7 +88,7 @@ export function NearbyList({
 
       <PrefsNote className="border-b border-gray-200 px-4 py-2" />
       {rows.length === 0 ? (
-        <p className="px-4 py-8 text-sm text-gray-600">No places match your filters here. Try zooming out or clearing filters.</p>
+        <EmptyState size="sm" art="plate" title="No places here" text="Zoom out or move the map, or clear the filters above." />
       ) : (
         <ul className="divide-y divide-gray-200">
           {rows.map(({ venue, distance, hasMenu, loaded, pick, status, menuSize }) => (

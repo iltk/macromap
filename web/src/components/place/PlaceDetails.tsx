@@ -16,6 +16,7 @@ import { RestaurantLogo } from "../restaurants/RestaurantLogo";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { PlaceInfo } from "./PlaceInfo";
+import { EmptyState } from "../ui/EmptyState";
 
 export type PlaceTab = "menu" | "info";
 
@@ -160,7 +161,7 @@ function Loaded({ details, userPosition, tab, onTabChange, focusItemId, scrollTo
             </Link>
           </div>
           {result.items.length === 0 ? (
-            <p className="px-4 py-8 text-sm text-gray-600">Nothing on this menu matches.</p>
+            <EmptyState size="sm" art="plate" title="Nothing on this menu matches" text="Try another section, clear the search, or turn off “Only items that fit”." />
           ) : (
             <MenuList
               items={result.items}

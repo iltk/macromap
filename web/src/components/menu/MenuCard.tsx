@@ -35,7 +35,7 @@ export function MenuCard({
         highlighted ? "border-accent ring-2 ring-accent/25" : "border-gray-200"
       }`}
     >
-      <FoodImage src={item.imageUrl} alt={item.name} tintKey={sectionOf(item)} variant="card" className="aspect-[4/3] w-full" />
+      <FoodImage section={item.menuCategory} src={item.imageUrl} alt={item.name} tintKey={sectionOf(item)} variant="card" className="aspect-[4/3] w-full" />
 
       <div className="flex flex-1 flex-col px-5 pt-1 pb-4">
         <h3 className="text-[17px] leading-snug font-bold text-gray-900">

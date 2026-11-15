@@ -14,6 +14,7 @@ import { usePrefs } from "../stores/prefs";
 import type { RestaurantMenu } from "../types/venues";
 import { bestPick } from "../utils/macros";
 import { DEFAULT_QUERY, menuSections, queryMenu, type MenuQuery } from "../utils/menuQuery";
+import { EmptyState } from "../components/ui/EmptyState";
 
 export function RestaurantMenuPage() {
   const { slug = "" } = useParams();
@@ -96,11 +97,17 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
       </header>
 
       {menu.length === 0 ? (
-        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6">
-          <p className="font-medium text-gray-900">No nutrition info yet</p>
-          <p className="mt-1 text-sm text-gray-600">
-            We haven't added {restaurant.name}'s menu yet. You can still find its locations on the map.
-          </p>
+        <div className="mt-8 rounded-lg border border-gray-200 bg-white">
+          <EmptyState
+            art="plate"
+            title="No nutrition info yet"
+            text={`We haven't added ${restaurant.name}'s menu yet. You can still find its locations.`}
+            action={
+              <Link to={`/?chain=${restaurant.slug}`} className={ui.btnPrimary}>
+                View on map
+              </Link>
+            }
+          />
         </div>
       ) : (
         <div className="mt-8 space-y-4">
@@ -139,8 +146,8 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
               </div>
             </div>
             {result.items.length === 0 ? (
-              <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-                Nothing on this menu matches. Try another section or clear the search.
+              <div className="rounded-lg border border-gray-200 bg-white">
+                <EmptyState art="plate" title="Nothing on this menu matches" text="Try another section, clear the search, or turn off “Only items that fit”." />
               </div>
             ) : (
               <MenuList

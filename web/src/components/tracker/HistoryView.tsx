@@ -4,6 +4,7 @@ import { dayKey } from "../../utils/dates";
 import { daySeries, downloadText, logToCsv } from "../../utils/history";
 import { DayBarChart } from "../charts/DayBarChart";
 import { ui } from "../ui/styles";
+import { EmptyState } from "../ui/EmptyState";
 
 /** Last 7 or 30 days: averages, calorie and protein charts, a day table and CSV export. */
 export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void }) {
@@ -43,11 +44,26 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
         ))}
       </section>
 
+      {logged.length === 0 ? (
+        <section className="rounded-xl border border-gray-200 bg-white">
+          <EmptyState
+            art="plate"
+            title={`Nothing logged in the last ${range} days`}
+            text="Charts and averages appear once you've logged a few meals."
+            action={
+              <button type="button" onClick={() => onOpenDay(dayKey())} className={ui.btnPrimary}>
+                Go to today
+              </button>
+            }
+          />
+        </section>
+      ) : (
       <section className="space-y-6 rounded-xl border border-gray-200 bg-white p-4">
         <DayBarChart title="Calories" points={points} value={(p) => p.calories} unit="cal" target={targets?.calories ?? null} color="var(--color-gray-700)" />
         <DayBarChart title="Protein (g)" points={points} value={(p) => p.protein} unit="g protein" target={targets?.protein ?? null} color="var(--color-protein)" />
         {targets && <p className="text-xs text-gray-500">“Near calorie target” counts logged days within 10% of {targets.calories} cal.</p>}
       </section>
+      )}
 
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-sm">
