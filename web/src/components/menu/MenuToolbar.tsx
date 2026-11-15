@@ -3,6 +3,7 @@ import { openSheet } from "../../stores/ui";
 import { MENU_SORTS, type MenuQuery, type MenuSort } from "../../utils/menuQuery";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
+import { allergenLabel } from "../../utils/allergens";
 
 /** Search, section, sort and "fits my preferences": the same controls on the map panel and the menu page. */
 export function MenuToolbar({
@@ -40,6 +41,7 @@ export function MenuToolbar({
           onChange={(e) => set({ text: e.target.value })}
           placeholder={placeholder}
           aria-label={placeholder}
+          data-shortcut="search"
           className={`${ui.input} pl-8`}
         />
       </div>
@@ -62,6 +64,14 @@ export function MenuToolbar({
       </div>
       </div>
 
+      {prefs.avoid.length > 0 && (
+        <p className="text-sm text-gray-700">
+          Avoiding {prefs.avoid.map((a) => allergenLabel(a).toLowerCase()).join(", ")} ·{" "}
+          <button type="button" onClick={() => openSheet("prefs")} className={ui.link}>
+            change
+          </button>
+        </p>
+      )}
       {prefs.goalActive ? (
         <label className="flex cursor-pointer items-start gap-2 text-sm text-gray-700">
           <input

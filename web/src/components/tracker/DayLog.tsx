@@ -4,6 +4,7 @@ import { timeLabel } from "../../utils/dates";
 import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
+import { undoable } from "../ui/undoable";
 
 export function DayLog({ date, entries }: { date: string; entries: LogEntry[] }) {
   if (entries.length === 0) {
@@ -65,7 +66,9 @@ function EntryRow({ date, entry }: { date: string; entry: LogEntry }) {
         </p>
       </div>
       <div className="flex shrink-0 items-center rounded-md border border-gray-300">
-        <button type="button" onClick={() => setEntryQty(date, entry.id, qty - 1)} aria-label={`One less ${item.name}`} className="p-1.5 text-gray-600 hover:text-gray-900">
+        <button
+          type="button"
+          onClick={() => (qty > 1 ? setEntryQty(date, entry.id, qty - 1) : undoable(`Removed ${item.name}`, () => removeEntry(date, entry.id)))} aria-label={`One less ${item.name}`} className="p-1.5 text-gray-600 hover:text-gray-900">
           <Icon name="remove" className="h-3.5 w-3.5" />
         </button>
         <span className="w-5 text-center text-sm tabular-nums">{qty}</span>
@@ -85,7 +88,7 @@ function EntryRow({ date, entry }: { date: string; entry: LogEntry }) {
           </option>
         ))}
       </select>
-      <button type="button" onClick={() => removeEntry(date, entry.id)} aria-label={`Remove ${item.name}`} className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
+      <button type="button" onClick={() => undoable(`Removed ${item.name}`, () => removeEntry(date, entry.id))} aria-label={`Remove ${item.name}`} className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
         <Icon name="close" className="h-4 w-4" />
       </button>
     </li>

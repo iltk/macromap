@@ -13,6 +13,7 @@ import { usePrefs } from "../stores/prefs";
 import { addToPlan, setPlanQty, totalsOf, useTracker } from "../stores/tracker";
 import { toTrayItem } from "../stores/tray";
 import { openSheet } from "../stores/ui";
+import { PrefsNote } from "../components/ui/PrefsNote";
 import type { MenuItem, RestaurantMenu, RestaurantSummary } from "../types/venues";
 import { needsCheck } from "../utils/macros";
 import { DEFAULT_QUERY, menuSections, queryMenu } from "../utils/menuQuery";
@@ -194,7 +195,7 @@ function MenuPicker({ restaurant, restaurants, onChange }: { restaurant: Restaur
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Icon name="search" className="pointer-events-none absolute top-2.5 left-2.5 h-4 w-4 text-gray-400" />
-          <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder={`Search ${restaurant.name}`} aria-label={`Search ${restaurant.name}'s menu`} className={`${ui.input} pl-8`} />
+          <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder={`Search ${restaurant.name}`} aria-label={`Search ${restaurant.name}'s menu`} data-shortcut="search" className={`${ui.input} pl-8`} />
         </div>
         {prefs.goalActive ? (
           <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700">
@@ -208,6 +209,7 @@ function MenuPicker({ restaurant, restaurants, onChange }: { restaurant: Restaur
         )}
       </div>
 
+      <PrefsNote className="mt-2" />
       <div className="no-scrollbar mt-3 flex gap-1 overflow-x-auto border-b border-gray-200" role="tablist" aria-label="Menu sections">
         {[["all", restaurant.menu.length] as [string, number], ...sections].map(([s, n]) => (
           <button

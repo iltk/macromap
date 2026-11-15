@@ -197,3 +197,10 @@ export function createCustomFood(
 
 export const removeCustomFood = (id: string) =>
   store.set((s) => ({ ...s, customFoods: s.customFoods.filter((f) => f.id !== id), favorites: s.favorites.filter((f) => f.id !== id) }));
+
+/* ---------- undo ---------- */
+
+/** Current tracker state, for undo snapshots. */
+export const trackerSnapshot = () => store.get();
+/** Puts back a snapshot taken with trackerSnapshot(). */
+export const restoreTracker = (snapshot: TrackerState) => store.set(snapshot);

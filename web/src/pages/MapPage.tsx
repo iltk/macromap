@@ -12,6 +12,7 @@ import { SearchBar } from "../components/search/SearchBar";
 import { Toast } from "../components/ui/Toast";
 import { Icon } from "../components/ui/icons";
 import { useApi } from "../hooks/useApi";
+import { useBottomSheet } from "../hooks/useBottomSheet";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationDetails } from "../hooks/useLocationDetails";
 import { useNow } from "../hooks/useNow";
@@ -49,7 +50,9 @@ export function MapPage() {
   }));
   const [center, setCenter] = useState<Coordinates>(TORONTO);
   const [mapReady, setMapReady] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(() => Boolean(searchParams.get("place")));
+  const { containerRef, height: sheetHeight, dragging, handleProps, snap, reveal } = useBottomSheet(
+    searchParams.get("place") ? "half" : "peek",
+  );
   const { details, isLoading, error, retry } = useLocationDetails(selectedId);
 
   const pendingFly = useRef<string | null>(selectedId);
@@ -98,12 +101,12 @@ export function MapPage() {
       setFocusItemId(opts.focusItemId ?? null);
       setScrollToFocus(opts.scroll ?? true);
       if (!id) return;
-      setSheetOpen(true);
+      reveal();
       const pin = venues.find((v) => v.locationId === id);
       if (pin) flyTo(pin.latitude, pin.longitude);
       else pendingFly.current = id;
     },
-    [venues, flyTo],
+    [venues, flyTo, reveal],
   );
 
   useEffect(() => {
@@ -184,7 +187,7 @@ export function MapPage() {
     if (venues.some((v) => v.locationId === place.locationId)) selectLocation(place.locationId);
     else {
       setSelectedId(place.locationId);
-      setSheetOpen(true);
+      reveal();
       flyTo(place.latitude, place.longitude);
     }
   };
@@ -209,20 +212,21 @@ export function MapPage() {
   return (
     <div className="flex h-dvh w-screen flex-col overflow-hidden">
       <SiteHeader fullWidth />
-      <div className="relative flex min-h-0 flex-1">
+      <div ref={containerRef} className="relative flex min-h-0 flex-1">
         {/* panel: left column on desktop, bottom sheet on mobile */}
         <aside
           ref={sheetRef}
           aria-label="Places"
-          className={`absolute inset-x-0 bottom-0 z-20 flex flex-col rounded-t-xl border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-[height] duration-200 md:static md:h-auto md:w-[400px] md:shrink-0 md:rounded-none md:border-t-0 md:border-r md:shadow-none ${
-            sheetOpen ? "h-[68%]" : "h-[124px]"
+          style={{ "--sheet-h": `${sheetHeight}px` } as React.CSSProperties}
+          className={`absolute inset-x-0 bottom-0 z-20 flex h-(--sheet-h) flex-col rounded-t-xl border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] md:static md:h-auto md:w-[400px] md:shrink-0 md:rounded-none md:border-t-0 md:border-r md:shadow-none ${
+            dragging ? "" : "transition-[height] duration-200 ease-out"
           }`}
         >
           <button
             type="button"
-            onClick={() => setSheetOpen((o) => !o)}
-            aria-label={sheetOpen ? "Collapse list" : "Expand list"}
-            className="flex justify-center pt-2 pb-1 md:hidden"
+            {...handleProps}
+            aria-label={`List size: ${snap}. Drag or tap to resize`}
+            className="flex cursor-grab touch-none justify-center pt-2 pb-2 active:cursor-grabbing md:hidden"
           >
             <span className="h-1 w-10 rounded-full bg-gray-300" />
           </button>

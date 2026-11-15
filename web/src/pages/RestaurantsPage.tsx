@@ -8,6 +8,7 @@ import { ui } from "../components/ui/styles";
 import { useApi } from "../hooks/useApi";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { usePrefs } from "../stores/prefs";
+import { PrefsNote } from "../components/ui/PrefsNote";
 import { openSheet } from "../stores/ui";
 import type { RestaurantSummary } from "../types/venues";
 import { limitsToQuery } from "../utils/goals";
@@ -50,14 +51,10 @@ export function RestaurantsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
         <p className="mt-1 text-gray-600">Fast-food menus in Toronto, with calories, protein, carbs and fat for every item.</p>
 
-        <p className="mt-4 text-sm text-gray-700">
+        <PrefsNote className="mt-4 text-sm" />
+        <p className="mt-1 text-sm text-gray-700">
           {prefs.goalActive ? (
-            <>
-              Counting items that fit <span className="font-semibold">{prefs.goalName?.toLowerCase()}</span> ({prefs.goalRule}).{" "}
-              <button type="button" onClick={() => openSheet("prefs")} className={ui.link}>
-                Change
-              </button>
-            </>
+            <>Tiles count the items that fit {prefs.goalName?.toLowerCase()} ({prefs.goalRule}).</>
           ) : (
             <>
               <button type="button" onClick={() => openSheet("prefs")} className={ui.link}>
@@ -77,6 +74,7 @@ export function RestaurantsPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search restaurants or dishes"
               aria-label="Search restaurants or dishes"
+              data-shortcut="search"
               className={`${ui.input} pl-8`}
             />
           </div>

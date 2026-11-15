@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import { Sheets } from "./components/sheets/Sheets";
 import { Notifier } from "./components/ui/Notifier";
+import { Welcome } from "./components/onboarding/Welcome";
+import { useShortcuts } from "./hooks/useShortcuts";
 import { TrackerPage } from "./pages/TrackerPage";
 import { BuildPage } from "./pages/BuildPage";
 import { ThemeController } from "./stores/theme";
@@ -9,6 +11,7 @@ import { RestaurantMenuPage } from "./pages/RestaurantMenuPage";
 import { RestaurantsPage } from "./pages/RestaurantsPage";
 
 function App() {
+  useShortcuts();
   return (
     <BrowserRouter>
       <ThemeController />
@@ -22,6 +25,7 @@ function App() {
       </Routes>
       <Sheets />
       <Notifier />
+      <Welcome />
     </BrowserRouter>
   );
 }

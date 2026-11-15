@@ -7,6 +7,10 @@ import { bestPick, proteinDensity } from "../../utils/macros";
 import { getOpenStatus } from "../../utils/openingHours";
 import { RestaurantLogo } from "../restaurants/RestaurantLogo";
 import { ui } from "../ui/styles";
+import { Icon } from "../ui/icons";
+import { PrefsNote } from "../ui/PrefsNote";
+import { logWithNotice } from "../tray/logWithNotice";
+import { toTrayItem } from "../../stores/tray";
 
 const MAX_RESULTS = 30;
 const RADII_M = [1000, 2000, 4000, 8000, 20000];
@@ -81,16 +85,17 @@ export function NearbyList({
         )}
       </div>
 
+      <PrefsNote className="border-b border-gray-200 px-4 py-2" />
       {rows.length === 0 ? (
         <p className="px-4 py-8 text-sm text-gray-600">No places match your filters here. Try zooming out or clearing filters.</p>
       ) : (
         <ul className="divide-y divide-gray-200">
           {rows.map(({ venue, distance, hasMenu, loaded, pick, status, menuSize }) => (
-            <li key={venue.locationId}>
+            <li key={venue.locationId} className="flex items-center hover:bg-row-hover">
               <button
                 type="button"
                 onClick={() => onPick(venue.locationId, pick?.id ?? null)}
-                className="flex w-full gap-3 px-4 py-3 text-left hover:bg-row-hover"
+                className="flex min-w-0 flex-1 gap-3 py-3 pl-4 text-left"
               >
                 <RestaurantLogo name={venue.name} brandColor={venue.brandColor} category={venue.category} size="sm" />
                 <span className="min-w-0 flex-1">
@@ -121,6 +126,20 @@ export function NearbyList({
                   </span>
                 </span>
               </button>
+              {pick ? (
+                <button
+                  type="button"
+                  onClick={() => logWithNotice(toTrayItem(pick, venue.name, venue.slug))}
+                  aria-label={`Log ${pick.name} from ${venue.name} to today`}
+                  title={`Log ${pick.name} to today`}
+                  className="mx-3 inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-gray-300 bg-white px-2 text-xs font-medium text-gray-800 hover:border-gray-900"
+                >
+                  <Icon name="add" className="h-3.5 w-3.5" />
+                  Add
+                </button>
+              ) : (
+                <span className="w-3 shrink-0" />
+              )}
             </li>
           ))}
         </ul>

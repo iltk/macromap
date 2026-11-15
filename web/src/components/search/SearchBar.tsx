@@ -125,6 +125,7 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
           aria-controls={listId}
           aria-autocomplete="list"
           aria-label="Search restaurants and menu items"
+          data-shortcut="search"
           placeholder="Search places or dishes"
           className="h-full min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
           value={query}
@@ -136,6 +137,11 @@ export function SearchBar({ onSelectRestaurant, onSelectItem, onSelectPlace }: S
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
         />
+        {!query && (
+          <kbd className="mr-1 hidden rounded border border-gray-300 px-1.5 text-[11px] text-gray-500 md:inline" title="Press / to search">
+            /
+          </kbd>
+        )}
         {query && (
           <button
             type="button"

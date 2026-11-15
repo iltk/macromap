@@ -5,6 +5,7 @@ import type { TrayItem } from "../../stores/tray";
 import { recentItems } from "../../utils/history";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
+import { undoable } from "../ui/undoable";
 
 type Tab = "recent" | "favorites" | "mine";
 
@@ -64,7 +65,7 @@ export function QuickAdd({ date }: { date: string }) {
                     </span>
                   </span>
                   {tab === "mine" && item.restaurantSlug === CUSTOM_SLUG && (
-                    <button type="button" onClick={() => removeCustomFood(item.id)} aria-label={`Delete ${item.name}`} className="p-1 text-gray-400 hover:text-gray-900">
+                    <button type="button" onClick={() => undoable(`Deleted ${item.name}`, () => removeCustomFood(item.id))} aria-label={`Delete ${item.name}`} className="p-1 text-gray-400 hover:text-gray-900">
                       <Icon name="close" className="h-3.5 w-3.5" />
                     </button>
                   )}

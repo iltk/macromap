@@ -53,3 +53,7 @@ export const clearCompare = () => store.set((s) => ({ ...s, compare: [] }));
 
 export const useTray = () => useSyncExternalStore(store.subscribe, store.get, store.get);
 
+
+/** For undo: the current comparison, and a way to put it back. */
+export const compareSnapshot = () => store.get().compare;
+export const restoreCompare = (compare: TrayItem[]) => store.set((s) => ({ ...s, compare }));

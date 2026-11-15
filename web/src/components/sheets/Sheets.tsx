@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { setThemePref, useThemePref, type ThemePref } from "../../stores/theme";
 import { setLimits, usePrefs } from "../../stores/prefs";
 import { clearAvoid, toggleAvoid } from "../../stores/allergens";
-import { clearCompare, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { clearCompare, compareSnapshot, restoreCompare, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { undoableWith } from "../ui/undoable";
 import { TargetsForm } from "../tracker/TargetsForm";
 import { openSheet, useSheet } from "../../stores/ui";
 import { ALLERGENS } from "../../utils/allergens";
@@ -250,7 +251,14 @@ function CompareSheet() {
       )}
       {a && b && <p className="mt-3 text-xs text-gray-500">Highlighted: fewer calories, more protein.</p>}
       {compare.length > 0 && (
-        <button type="button" onClick={clearCompare} className={`mt-4 text-sm ${ui.link}`}>
+        <button
+          type="button"
+          onClick={() => {
+            const before = compareSnapshot();
+            undoableWith("Comparison cleared", clearCompare, () => restoreCompare(before));
+          }}
+          className={`mt-4 text-sm ${ui.link}`}
+        >
           Clear comparison
         </button>
       )}

@@ -9,6 +9,7 @@ import { lighterSwap } from "../../utils/swaps";
 import { FoodImage } from "../media/FoodImage";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
+import { undoable } from "../ui/undoable";
 
 const r = Math.round;
 
@@ -59,7 +60,12 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
                   </p>
                 </div>
                 <span className="flex shrink-0 items-center rounded-md border border-gray-300">
-                  <button type="button" onClick={() => setPlanQty(item.id, qty - 1)} aria-label={`One less ${item.name}`} className="p-1 text-gray-600 hover:text-gray-900">
+                  <button
+                    type="button"
+                    onClick={() => (qty > 1 ? setPlanQty(item.id, qty - 1) : undoable(`Removed ${item.name}`, () => setPlanQty(item.id, 0)))}
+                    aria-label={`One less ${item.name}`}
+                    className="p-1 text-gray-600 hover:text-gray-900"
+                  >
                     <Icon name="remove" className="h-3.5 w-3.5" />
                   </button>
                   <span className="w-5 text-center text-sm tabular-nums">{qty}</span>
@@ -143,8 +149,7 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
           <button
             type="button"
             onClick={() => {
-              logPlan(dayKey(), slot);
-              notify(`Logged to ${SLOT_LABELS[slot].toLowerCase()}`);
+              undoable(`Logged ${t.count} ${t.count === 1 ? "item" : "items"} to ${SLOT_LABELS[slot].toLowerCase()}`, () => logPlan(dayKey(), slot));
             }}
             className={ui.btnPrimary}
           >
@@ -155,7 +160,7 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
           <button type="button" onClick={copy} className={ui.link}>
             Copy order
           </button>
-          <button type="button" onClick={clearPlan} className="text-gray-600 hover:text-gray-900">
+          <button type="button" onClick={() => undoable("Order cleared", clearPlan)} className="text-gray-600 hover:text-gray-900">
             Clear
           </button>
         </div>
