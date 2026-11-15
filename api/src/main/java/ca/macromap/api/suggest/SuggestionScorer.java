@@ -57,7 +57,9 @@ public final class SuggestionScorer {
         boolean combo = items.size() > 1;
 
         boolean proteinOpen = r.protein() == null || r.protein() > 0;
+        boolean snack = r.meal() == MealTime.SNACK;
         double proteinNeed = r.protein() == null ? 40 : Math.max(1, r.protein());
+        if (snack) proteinNeed = Math.min(proteinNeed, 15); // a snack isn't meant to cover the day's protein
         double proteinCover = Math.min(protein, proteinNeed) / proteinNeed;
 
         double ideal = r.idealCalories(combo);
@@ -66,11 +68,16 @@ public final class SuggestionScorer {
         double density = Math.min(1, (protein / cal * 100) / 10); // 10 g per 100 cal = top marks
 
         double score = proteinOpen
-                ? 0.55 * proteinCover + 0.25 * sizeFit + 0.20 * density
+                ? (snack ? 0.35 * proteinCover + 0.45 * sizeFit : 0.55 * proteinCover + 0.25 * sizeFit) + 0.20 * density
                 : 0.70 * sizeFit + 0.30 * density; // protein already covered: just fit the budget well
 
         score -= overPenalty(carbs, r.carbs());
         score -= overPenalty(fat, r.fat());
+        if (r.meal() != null) {
+            // a combo is judged by its main (the first non-side item)
+            MenuItem main = items.stream().filter(m -> !sideLike(m)).findFirst().orElse(items.get(0));
+            score *= r.meal().fit(main);
+        }
         return Math.max(0, Math.min(1, score));
     }
 

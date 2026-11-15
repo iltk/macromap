@@ -102,4 +102,29 @@ class SuggestionScorerTest {
     void baseNameIgnoresVariantInParentheses() {
         assertThat(SuggestionScorer.baseName("Grandpa Burger (With Cheese, Lettuce-Wrapped)")).isEqualTo("grandpa burger");
     }
+
+    @Test
+    void breakfastItemsWinInTheMorningAndLoseAtDinner() {
+        MenuItem eggs = item("Bacon & Egger", "Breakfast", 400, 18, 30, 30);
+        MenuItem burger = item("Papa Burger", "Burger", 580, 40, 35, 40);
+        Remaining morning = new Remaining(700, 45.0, null, null, MealTime.BREAKFAST);
+        Remaining evening = new Remaining(700, 45.0, null, null, MealTime.DINNER);
+        assertThat(SuggestionScorer.score(List.of(eggs), morning)).isGreaterThan(SuggestionScorer.score(List.of(burger), morning));
+        assertThat(SuggestionScorer.score(List.of(burger), evening)).isGreaterThan(SuggestionScorer.score(List.of(eggs), evening));
+    }
+
+    @Test
+    void snacksPreferSmallerPortions() {
+        Remaining snack = new Remaining(700, 10.0, null, null, MealTime.SNACK);
+        MenuItem small = item("Apple turnover", "Dessert", 280, 3, 38, 15);
+        MenuItem big = item("Royale meal", "Burger", 690, 10, 60, 40);
+        assertThat(SuggestionScorer.score(List.of(small), snack)).isGreaterThan(SuggestionScorer.score(List.of(big), snack));
+    }
+
+    @Test
+    void mealTimeParsesLeniently() {
+        assertThat(MealTime.parse("Breakfast")).isEqualTo(MealTime.BREAKFAST);
+        assertThat(MealTime.parse("brunch")).isNull();
+        assertThat(MealTime.parse(null)).isNull();
+    }
 }
