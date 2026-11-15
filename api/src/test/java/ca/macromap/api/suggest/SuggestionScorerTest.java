@@ -144,4 +144,11 @@ class SuggestionScorerTest {
         MenuItem fatty = item("Cheese bites", "Side", 300, 12, 10, 25);
         assertThat(SuggestionScorer.topUpScore(lean, 60)).isGreaterThan(SuggestionScorer.topUpScore(fatty, 60));
     }
+
+    @Test
+    void topUpWithABigGapPrefersItemsThatFillMoreOfIt() {
+        MenuItem nigiri = item("Salmon nigiri (2pc)", "Sushi", 90, 8, 12, 2);
+        MenuItem grandpa = item("Grandpa Burger (Lettuce-Wrapped)", "Burger", 610, 43, 8, 43);
+        assertThat(SuggestionScorer.topUpScore(grandpa, 70)).isGreaterThan(SuggestionScorer.topUpScore(nigiri, 70));
+    }
 }
