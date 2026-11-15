@@ -1,7 +1,6 @@
 import { dismiss, useNotice } from "../../stores/notify";
 import { Icon } from "./icons";
 
-/** App-wide notification (bottom centre), e.g. "Logged to lunch · Undo". */
 export function Notifier() {
   const notice = useNotice();
   if (!notice) return null;

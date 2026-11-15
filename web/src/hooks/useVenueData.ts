@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { fetchVenues } from "../api/venues";
 import type { Venue } from "../types/venues";
 
-/** Loads every map pin once on startup. */
 export function useVenueData() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -1,13 +1,12 @@
 import { useTracker } from "../../stores/tracker";
 import { logWithNotice } from "./logWithNotice";
-import { toggleCompare, useTray, type TrayItem } from "../../stores/tray";
+import { toggleCompare, useCompare, type ItemRef } from "../../stores/compare";
 import { dayKey } from "../../utils/dates";
 import { Icon } from "../ui/icons";
 
-/** "Add" (log to today) and "Compare" controls for a menu item. */
-export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOnly?: boolean }) {
+export function ItemActions({ item, iconOnly = false }: { item: ItemRef; iconOnly?: boolean }) {
   const { days } = useTracker();
-  const { compare } = useTray();
+  const { compare } = useCompare();
   const loggedToday = (days[dayKey()] ?? []).filter((e) => e.item.id === item.id).reduce((n, e) => n + e.qty, 0);
   const comparing = compare.some((c) => c.id === item.id);
   const base = "inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium";

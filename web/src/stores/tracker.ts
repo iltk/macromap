@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { dayKey } from "../utils/dates";
 import { readJson, createPersistentStore } from "../utils/storage";
 import type { BodyProfile, DailyTarget } from "../utils/targets";
-import type { TrayItem } from "./tray";
+import type { ItemRef } from "./compare";
 
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
 export const SLOTS: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
@@ -15,14 +15,14 @@ export const SLOT_LABELS: Record<MealSlot, string> = {
 
 export interface LogEntry {
   id: string;
-  item: TrayItem;
+  item: ItemRef;
   qty: number;
   slot: MealSlot;
   addedAt: string; // ISO time
 }
 
-export interface PlanEntry {
-  item: TrayItem;
+interface PlanEntry {
+  item: ItemRef;
   qty: number;
 }
 
@@ -32,9 +32,9 @@ interface TrackerState {
   targets: DailyTarget | null;
   profile: BodyProfile | null;
   /** Items starred for quick add. */
-  favorites: TrayItem[];
+  favorites: ItemRef[];
   /** Foods the viewer entered by hand (not on any menu). */
-  customFoods: TrayItem[];
+  customFoods: ItemRef[];
   /** Named orders to re-log or rebuild in one tap ("My usual at A&W"). */
   savedOrders: SavedOrder[];
 }
@@ -59,10 +59,10 @@ export function slotForTime(d = new Date()): MealSlot {
 const newId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 
-/** First run: carry over the old meal sheet (as today's entries) and its daily target. */
+/** One-off: turn the old meal sheet (macromap.tray.v2) into today's entries and keep its target. */
 function initialState(): TrackerState {
   const fresh: TrackerState = { ...EMPTY };
-  const old = readJson<{ meal?: { item: TrayItem; qty: number }[]; target?: DailyTarget | null } | null>(
+  const old = readJson<{ meal?: { item: ItemRef; qty: number }[]; target?: DailyTarget | null } | null>(
     "macromap.tray.v2",
     null,
   );
@@ -101,7 +101,7 @@ const updateDay = (date: string, fn: (entries: LogEntry[]) => LogEntry[]) =>
   });
 
 /** Log an item; returns the entry so callers can offer Undo / change meal. */
-export function logItem(item: TrayItem, opts: { date?: string; slot?: MealSlot; qty?: number } = {}): LogEntry & { date: string } {
+export function logItem(item: ItemRef, opts: { date?: string; slot?: MealSlot; qty?: number } = {}): LogEntry & { date: string } {
   const now = new Date();
   const date = opts.date ?? dayKey(now);
   const entry: LogEntry = { id: newId(), item, qty: opts.qty ?? 1, slot: opts.slot ?? slotForTime(now), addedAt: now.toISOString() };
@@ -115,7 +115,7 @@ export const setEntryQty = (date: string, id: string, qty: number) =>
 export const moveEntry = (date: string, id: string, slot: MealSlot) =>
   updateDay(date, (l) => l.map((e) => (e.id === id ? { ...e, slot } : e)));
 
-export function addToPlan(item: TrayItem) {
+export function addToPlan(item: ItemRef) {
   store.set((s) => {
     const found = s.plan.find((p) => p.item.id === item.id);
     return {
@@ -151,7 +151,7 @@ export interface Totals {
   count: number;
 }
 
-export function totalsOf(entries: { item: TrayItem; qty: number }[]): Totals {
+export function totalsOf(entries: { item: ItemRef; qty: number }[]): Totals {
   return entries.reduce(
     (t, { item, qty }) => ({
       calories: t.calories + (item.calories ?? 0) * qty,
@@ -172,9 +172,8 @@ export function useToday() {
   return { totals, targets, left };
 }
 
-/* ---------- favourites & custom foods ---------- */
 
-export function toggleFavorite(item: TrayItem) {
+export function toggleFavorite(item: ItemRef) {
   store.set((s) => ({
     ...s,
     favorites: s.favorites.some((f) => f.id === item.id) ? s.favorites.filter((f) => f.id !== item.id) : [item, ...s.favorites],
@@ -187,8 +186,8 @@ export const CUSTOM_SLUG = "custom";
 export function createCustomFood(
   food: { name: string; calories: number; protein: number; carbs: number; fat: number; servingSize?: string },
   save: boolean,
-): TrayItem {
-  const item: TrayItem = {
+): ItemRef {
+  const item: ItemRef = {
     id: `custom:${newId()}`,
     name: food.name.trim(),
     restaurantName: "My food",
@@ -207,14 +206,12 @@ export function createCustomFood(
 export const removeCustomFood = (id: string) =>
   store.set((s) => ({ ...s, customFoods: s.customFoods.filter((f) => f.id !== id), favorites: s.favorites.filter((f) => f.id !== id) }));
 
-/* ---------- undo ---------- */
 
 /** Current tracker state, for undo snapshots. */
 export const trackerSnapshot = () => store.get();
 /** Puts back a snapshot taken with trackerSnapshot(). */
 export const restoreTracker = (snapshot: TrackerState) => store.set(snapshot);
 
-/* ---------- saved orders ---------- */
 
 /** Saves the current plan under a name; returns the saved order. */
 export function saveOrder(name: string): SavedOrder | null {

@@ -9,16 +9,6 @@ export const MACRO_COLORS = {
   fat: "var(--color-fat)",
 } as const;
 
-/** Share of calories coming from each macro (4/4/9 kcal per gram). */
-export function macroSplit(item: Pick<MenuItem, "protein" | "carbs" | "fat">) {
-  const p = (item.protein ?? 0) * 4;
-  const c = (item.carbs ?? 0) * 4;
-  const f = (item.fat ?? 0) * 9;
-  const total = p + c + f;
-  if (total <= 0) return null;
-  return { protein: p / total, carbs: c / total, fat: f / total };
-}
-
 /** Grams of protein per 100 kcal (a quick "protein density" score). */
 export function proteinDensity(item: Pick<MenuItem, "protein" | "calories">): number | null {
   if (!item.calories || item.protein == null) return null;

@@ -2,10 +2,7 @@ import { usePrefs } from "../../stores/prefs";
 import { openSheet } from "../../stores/ui";
 import { Icon } from "./icons";
 
-/**
- * One line that says your preferences are shaping this list, so items never seem to
- * vanish without a reason. Renders nothing when no goal or allergens are set.
- */
+/** Says the viewer's goal/allergens are filtering what they see. Renders nothing when none are set. */
 export function PrefsNote({ className = "" }: { className?: string }) {
   const prefs = usePrefs();
   if (!prefs.active) return null;

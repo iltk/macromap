@@ -1,17 +1,17 @@
 import { useMemo, useState } from "react";
 import { notify } from "../../stores/notify";
 import { createCustomFood, logItem, removeCustomFood, slotForTime, toggleFavorite, useTracker, CUSTOM_SLUG } from "../../stores/tracker";
-import type { TrayItem } from "../../stores/tray";
+import type { ItemRef } from "../../stores/compare";
 import { recentItems } from "../../utils/history";
 import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
 import { SavedOrders } from "../build/SavedOrders";
 import { EmptyState } from "../ui/EmptyState";
+import { TabBar } from "../ui/TabBar";
 
 type Tab = "recent" | "favorites" | "mine" | "orders";
 
-/** Re-log recent or starred items, and add foods that aren't on any menu. */
 export function QuickAdd({ date }: { date: string }) {
   const { days, favorites, customFoods } = useTracker();
   const [tab, setTab] = useState<Tab>("recent");
@@ -19,7 +19,7 @@ export function QuickAdd({ date }: { date: string }) {
   const recents = useMemo(() => recentItems(days), [days]);
   const list = tab === "recent" ? recents : tab === "favorites" ? favorites : tab === "mine" ? customFoods : [];
   const isFav = (id: string) => favorites.some((f) => f.id === id);
-  const log = (item: TrayItem) => {
+  const log = (item: ItemRef) => {
     logItem(item, { date, slot: slotForTime() });
     notify(`Logged ${item.name}`);
   };
@@ -36,20 +36,18 @@ export function QuickAdd({ date }: { date: string }) {
         <CustomFoodForm onDone={(item) => { log(item); setForm(false); }} />
       ) : (
         <>
-          <div className="flex gap-4 border-b border-gray-100 px-4" role="tablist">
-            {(
-              [
-                ["recent", "Recent"],
-                ["favorites", "Starred"],
-                ["mine", "My foods"],
-                ["orders", "Orders"],
-              ] as const
-            ).map(([k, label]) => (
-              <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`-mb-px border-b-2 py-2 text-sm ${tab === k ? "border-gray-900 font-semibold text-gray-900" : "border-transparent text-gray-600"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
+          <TabBar
+            className="px-4"
+            label="Quick add"
+            value={tab}
+            onChange={setTab}
+            tabs={[
+              { value: "recent", label: "Recent" },
+              { value: "favorites", label: "Starred" },
+              { value: "mine", label: "My foods" },
+              { value: "orders", label: "Orders" },
+            ]}
+          />
           {tab === "orders" ? (
             <SavedOrders compact emptyText="Save an order in Build to re-log it here in one tap." />
           ) : list.length === 0 ? (
@@ -97,7 +95,7 @@ export function QuickAdd({ date }: { date: string }) {
   );
 }
 
-function CustomFoodForm({ onDone }: { onDone: (item: TrayItem) => void }) {
+function CustomFoodForm({ onDone }: { onDone: (item: ItemRef) => void }) {
   const [f, setF] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
   const [save, setSave] = useState(true);
   const n = (v: string) => Math.max(0, Number(v) || 0);

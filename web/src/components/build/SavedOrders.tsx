@@ -4,8 +4,7 @@ import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
 
-/** Saved orders: log one in a tap, or open it in the builder to tweak. */
-export function SavedOrders({ compact = false, emptyText }: { compact?: boolean; emptyText?: string }) {
+export function SavedOrders({ compact = false, emptyText, title }: { compact?: boolean; emptyText?: string; title?: string }) {
   const { savedOrders } = useTracker();
   const navigate = useNavigate();
 
@@ -20,7 +19,7 @@ export function SavedOrders({ compact = false, emptyText }: { compact?: boolean;
     navigate(`/build?r=${o.items[0]?.item.restaurantSlug ?? ""}`);
   };
 
-  return (
+  const list = (
     <ul className={compact ? "max-h-80 divide-y divide-gray-100 overflow-y-auto" : "grid gap-3 sm:grid-cols-2"}>
       {savedOrders.map((o) => {
         const t = totalsOf(o.items);
@@ -55,5 +54,13 @@ export function SavedOrders({ compact = false, emptyText }: { compact?: boolean;
         );
       })}
     </ul>
+  );
+  return title ? (
+    <section className="mt-8">
+      <h2 className="mb-3 text-base font-semibold text-gray-900">{title}</h2>
+      {list}
+    </section>
+  ) : (
+    list
   );
 }

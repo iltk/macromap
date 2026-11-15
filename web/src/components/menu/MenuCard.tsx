@@ -1,14 +1,13 @@
 import type { Ref } from "react";
-import { toTrayItem } from "../../stores/tray";
+import { toItemRef } from "../../stores/compare";
 import type { MenuItem } from "../../types/venues";
 import { allergenLabel } from "../../utils/allergens";
 import { needsCheck } from "../../utils/macros";
 import { sectionOf } from "../../utils/menuQuery";
 import { FoodImage } from "../media/FoodImage";
-import { ItemActions } from "../tray/ItemActions";
+import { ItemActions } from "../items/ItemActions";
 import { Icon } from "../ui/icons";
 
-/** Photo card: image, name, short description, and the four numbers that matter. */
 export function MenuCard({
   item,
   restaurantName,
@@ -57,7 +56,7 @@ export function MenuCard({
         </dl>
 
         <div className="mt-3 -mb-1 flex justify-center border-t border-gray-100 pt-2">
-          <ItemActions item={toTrayItem(item, restaurantName, restaurantSlug)} />
+          <ItemActions item={toItemRef(item, restaurantName, restaurantSlug)} />
         </div>
       </div>
     </li>

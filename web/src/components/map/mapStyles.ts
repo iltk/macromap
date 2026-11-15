@@ -1,6 +1,6 @@
 const KEY = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
 
-export type MapStyleId = "streets" | "streetsDark" | "satellite";
+type MapStyleId = "streets" | "streetsDark" | "satellite";
 
 export const MAP_STYLES: Record<MapStyleId, { label: string; url: string }> = {
   streets: {

@@ -1,27 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { fetchRestaurants, searchPlaces } from "../api/venues";
+import { searchPlaces } from "../api/venues";
 import { SiteHeader } from "../components/layout/SiteHeader";
 import { RestaurantLogo } from "../components/restaurants/RestaurantLogo";
 import { Icon } from "../components/ui/icons";
 import { ui } from "../components/ui/styles";
 import { useApi } from "../hooks/useApi";
+import { useRestaurantSummaries } from "../hooks/useRestaurantSummaries";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { usePrefs } from "../stores/prefs";
 import { PrefsNote } from "../components/ui/PrefsNote";
 import { openSheet } from "../stores/ui";
 import type { RestaurantSummary } from "../types/venues";
-import { limitsToQuery } from "../utils/goals";
 import { EmptyState } from "../components/ui/EmptyState";
 
 type SortKey = "match" | "az" | "locations";
 
 export function RestaurantsPage() {
   const prefs = usePrefs();
-  const goalQuery = prefs.goalActive ? limitsToQuery(prefs.limits) : "";
-  const { data: restaurants, error, isLoading, retry } = useApi(`restaurants?${goalQuery}`, (signal) => fetchRestaurants(goalQuery, signal), {
-    keepPrevious: true,
-  });
+  const { data: restaurants, error, isLoading, retry } = useRestaurantSummaries();
   const [query, setQuery] = useState("");
   const [sortChoice, setSortChoice] = useState<SortKey | null>(null);
   const sort: SortKey = sortChoice ?? (prefs.goalActive ? "match" : "az");

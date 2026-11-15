@@ -9,8 +9,8 @@ import { RestaurantLogo } from "../restaurants/RestaurantLogo";
 import { ui } from "../ui/styles";
 import { Icon } from "../ui/icons";
 import { PrefsNote } from "../ui/PrefsNote";
-import { logWithNotice } from "../tray/logWithNotice";
-import { toTrayItem } from "../../stores/tray";
+import { logWithNotice } from "../items/logWithNotice";
+import { toItemRef } from "../../stores/compare";
 import { EmptyState } from "../ui/EmptyState";
 
 const MAX_RESULTS = 30;
@@ -18,7 +18,6 @@ const RADII_M = [1000, 2000, 4000, 8000, 20000];
 
 type SortKey = "match" | "distance";
 
-/** Places around the map centre, each with its best menu item for the viewer's preferences. */
 export function NearbyList({
   venues,
   center,
@@ -130,7 +129,7 @@ export function NearbyList({
               {pick ? (
                 <button
                   type="button"
-                  onClick={() => logWithNotice(toTrayItem(pick, venue.name, venue.slug))}
+                  onClick={() => logWithNotice(toItemRef(pick, venue.name, venue.slug))}
                   aria-label={`Log ${pick.name} from ${venue.name} to today`}
                   title={`Log ${pick.name} to today`}
                   className="mx-3 inline-flex h-8 shrink-0 items-center gap-1 rounded-md border border-gray-300 bg-white px-2 text-xs font-medium text-gray-800 hover:border-gray-900"

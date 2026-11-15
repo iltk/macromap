@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type Snap = "peek" | "half" | "full";
+type Snap = "peek" | "half" | "full";
 const ORDER: Snap[] = ["peek", "half", "full"];
 const PEEK_PX = 124;
 
 /**
- * A bottom sheet that snaps to three heights. Drag the handle (pointer events, works with
- * touch and mouse) and release to snap to the nearest height; a tap without dragging steps
- * to the next height. Heights are relative to `container`.
+ * Bottom sheet with three snap heights. Dragging the handle snaps to the nearest one on
+ * release; tapping it steps to the next.
  */
 export function useBottomSheet(initial: Snap = "peek") {
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
@@ -60,15 +59,13 @@ export function useBottomSheet(initial: Snap = "peek") {
   };
 
   return {
-    /** Callback ref for the element the sheet sits in (its height sets the snap points). */
     containerRef: setContainerEl,
     snap,
     setSnap,
-    /** Pixel height to apply (mobile only), and whether a drag is in progress (no transition then). */
     height: dragPx ?? heightFor(snap),
     dragging: dragPx !== null,
     handleProps,
-    /** Raise from peek to half (e.g. when a place opens); leave half/full alone. */
+    // peek -> half when something opens; leaves half/full alone
     reveal,
   };
 }

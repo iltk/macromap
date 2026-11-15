@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-export interface Notice {
+interface Notice {
   id: number;
   message: string;
   /** Optional extra controls (e.g. Undo) rendered by the Notifier. */

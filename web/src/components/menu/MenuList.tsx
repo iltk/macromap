@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { toTrayItem } from "../../stores/tray";
+import { toItemRef } from "../../stores/compare";
 import type { MenuItem } from "../../types/venues";
 import { allergenLabel } from "../../utils/allergens";
 import { needsCheck, proteinDensity } from "../../utils/macros";
 import { sectionOf, type MenuSort } from "../../utils/menuQuery";
-import { ItemActions } from "../tray/ItemActions";
+import { ItemActions } from "../items/ItemActions";
 import { FoodImage } from "../media/FoodImage";
 import { MenuCard } from "./MenuCard";
 import { Icon } from "../ui/icons";
@@ -15,10 +15,9 @@ interface Props {
   restaurantName: string;
   restaurantSlug: string;
   focusItemId: string | null;
-  /** "compact" for the narrow map panel; "cards" (photo grid) or "table" on the menu page. */
+  /** "compact" in the map panel; "cards" or "table" on the menu page */
   layout: "compact" | "cards" | "table";
   onSort?: (sort: MenuSort) => void;
-  /** Scroll the focused item into view (off when the item was just highlighted from a list). */
   scrollToFocus?: boolean;
 }
 
@@ -77,7 +76,7 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
                   </p>
                   {contains(m) && <p className="mt-0.5 text-xs text-gray-500">{contains(m)}</p>}
                   <div className="mt-1.5 -ml-2">
-                    <ItemActions item={toTrayItem(m, restaurantName, restaurantSlug)} />
+                    <ItemActions item={toItemRef(m, restaurantName, restaurantSlug)} />
                   </div>
                   </div>
                 </li>
@@ -172,7 +171,7 @@ export function MenuList({ items, sort, restaurantName, restaurantSlug, focusIte
                   <td className="px-3 py-2.5 whitespace-nowrap text-right text-gray-700 tabular-nums">{m.fat ?? "–"} g</td>
                   <td className="px-3 py-2.5 whitespace-nowrap text-right text-gray-700 tabular-nums">{d != null ? d.toFixed(1) : "–"}</td>
                   <td className="px-2 py-2.5 text-right whitespace-nowrap">
-                    <ItemActions item={toTrayItem(m, restaurantName, restaurantSlug)} iconOnly />
+                    <ItemActions item={toItemRef(m, restaurantName, restaurantSlug)} iconOnly />
                   </td>
                 </tr>
               );

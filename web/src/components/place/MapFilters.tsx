@@ -2,7 +2,6 @@ import type { Venue, VenueCategory } from "../../types/venues";
 import type { MapFilterState } from "../../utils/filter";
 import { ui } from "../ui/styles";
 
-/** "Open now" plus one "Show" menu (all / by type / one chain): fits on one row. */
 export function MapFilters({
   venues,
   value,

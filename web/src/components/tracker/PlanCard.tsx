@@ -2,7 +2,6 @@ import { Link } from "react-router";
 import { totalsOf, useTracker } from "../../stores/tracker";
 import { ui } from "../ui/styles";
 
-/** Short summary of the meal being built, linking to the full builder. */
 export function PlanCard() {
   const { plan } = useTracker();
   const t = totalsOf(plan);

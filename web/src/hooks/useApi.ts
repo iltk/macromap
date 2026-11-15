@@ -7,8 +7,8 @@ interface Result<T> {
 }
 
 /**
- * Fetches `fetcher` whenever `key` changes (null = don't fetch).
- * Results are keyed so a stale response never shows for a newer key.
+ * Runs `fetcher` whenever `key` changes (null skips the request). A response only
+ * shows while its key is current, so a slow old request can't overwrite a newer one.
  */
 export function useApi<T>(
   key: string | null,
@@ -34,7 +34,6 @@ export function useApi<T>(
 
   const current = result && result.key === key ? result : null;
   return {
-    // keepPrevious: show the last result while a new key loads (avoids flashing skeletons)
     data: current?.data ?? (keepPrevious ? (result?.data ?? null) : null),
     error: current?.error ?? null,
     isLoading: key !== null && !current,

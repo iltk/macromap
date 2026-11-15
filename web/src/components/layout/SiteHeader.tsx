@@ -1,11 +1,11 @@
 import { Link, NavLink } from "react-router";
 import { usePrefs } from "../../stores/prefs";
-import { useTray } from "../../stores/tray";
+import { useCompare } from "../../stores/compare";
 import { useToday } from "../../stores/tracker";
 import { openSheet } from "../../stores/ui";
 import { Icon } from "../ui/icons";
 
-export function Logo() {
+function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2" aria-label="MacroMap home">
       <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden>
@@ -24,7 +24,7 @@ const navCls = ({ isActive }: { isActive: boolean }) =>
 
 export function SiteHeader({ fullWidth = false }: { fullWidth?: boolean }) {
   const prefs = usePrefs();
-  const { compare } = useTray();
+  const { compare } = useCompare();
   const today = useToday();
 
   return (

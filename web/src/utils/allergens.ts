@@ -17,7 +17,7 @@ export const ALLERGENS: { code: string; label: string }[] = [
 
 export const allergenLabel = (code: string) => ALLERGENS.find((a) => a.code === code)?.label ?? code;
 
-export type AllergenStatus = "ok" | "contains" | "unknown";
+type AllergenStatus = "ok" | "contains" | "unknown";
 
 /**
  * "ok" only when the item's allergen data is known AND lists none of the avoided allergens.

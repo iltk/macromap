@@ -12,10 +12,8 @@ export interface PinBrand {
 }
 
 /**
- * Draws a teardrop pin in the chain's brand colour with its initials in a white disc.
- * Synchronous (canvas), so it can run inside MapLibre's `styleimagemissing` handler,
- * which also re-creates images after the map style changes (e.g. dark mode).
- *
+ * Brand-coloured teardrop with the chain's initials. Drawn synchronously on a canvas so it
+ * works inside MapLibre's `styleimagemissing` handler, which also fires after a style switch.
  * Image ids: `pin-<slug>` and `pin-<slug>-selected`.
  */
 function drawPin(brand: PinBrand, selectedColor: string | null): ImageData | null {
@@ -56,7 +54,7 @@ function drawPin(brand: PinBrand, selectedColor: string | null): ImageData | nul
 const registered = new WeakSet<MaplibreMap>();
 const FALLBACK: PinBrand = { color: "#5f6368", initials: "•" };
 
-/** Idempotent; call as soon as the map instance exists (before its style finishes loading). */
+// Safe to call more than once. Call before the style loads so no pin is requested too early.
 export function registerPinImages(
   map: MaplibreMap,
   brandFor: (slug: string) => PinBrand | undefined,

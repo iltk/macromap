@@ -33,7 +33,7 @@ export function usePrefs() {
   };
 }
 
-export function describeLimits(l: MacroLimits): string {
+function describeLimits(l: MacroLimits): string {
   const out: string[] = [];
   if (l.maxCalories !== null) out.push(`≤ ${l.maxCalories} cal`);
   if (l.minProtein !== null) out.push(`${l.minProtein} g+ protein`);

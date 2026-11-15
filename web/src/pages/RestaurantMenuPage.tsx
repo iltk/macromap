@@ -15,6 +15,7 @@ import type { RestaurantMenu } from "../types/venues";
 import { bestPick } from "../utils/macros";
 import { DEFAULT_QUERY, menuSections, queryMenu, type MenuQuery } from "../utils/menuQuery";
 import { EmptyState } from "../components/ui/EmptyState";
+import { Segmented } from "../components/ui/Segmented";
 
 export function RestaurantMenuPage() {
   const { slug = "" } = useParams();
@@ -130,20 +131,15 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
               <div className="min-w-0">
                 {pick && prefs.goalActive && <TopPick item={pick} forGoal={prefs.goalName} onShow={() => setFocusItemId(pick.id)} />}
               </div>
-              <div className="inline-flex shrink-0 rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="View">
-                {(["cards", "table"] as const).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    role="radio"
-                    aria-checked={view === v}
-                    onClick={() => setView(v)}
-                    className={`rounded px-3 py-1 text-sm capitalize ${view === v ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
+              <Segmented
+                label="View"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "cards", label: "Cards" },
+                  { value: "table", label: "Table" },
+                ]}
+              />
             </div>
             {result.items.length === 0 ? (
               <div className="rounded-lg border border-gray-200 bg-white">

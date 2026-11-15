@@ -1,10 +1,7 @@
 import type { FoodKind } from "../../utils/foodKind";
 import { FoodGlyph } from "../media/FoodGlyph";
 
-/**
- * "Nothing here yet" with a purpose: a small drawing, one sentence, and the one
- * thing to do next. `size="sm"` for inside cards and lists.
- */
+/** Drawing, one sentence and the next step. Use size="sm" inside cards and lists. */
 export function EmptyState({
   art = "plate",
   title,

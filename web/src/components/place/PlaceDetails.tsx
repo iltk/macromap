@@ -17,6 +17,7 @@ import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { PlaceInfo } from "./PlaceInfo";
 import { EmptyState } from "../ui/EmptyState";
+import { TabBar } from "../ui/TabBar";
 
 export type PlaceTab = "menu" | "info";
 
@@ -119,23 +120,16 @@ function Loaded({ details, userPosition, tab, onTabChange, focusItemId, scrollTo
         </div>
       </div>
 
-      <div role="tablist" className="flex gap-5 border-b border-gray-200 px-4">
-        {(["menu", "info"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === t}
-            disabled={t === "menu" && !hasMenu}
-            onClick={() => onTabChange(t)}
-            className={`-mb-px border-b-2 py-2 text-sm ${
-              activeTab === t ? "border-gray-900 font-semibold text-gray-900" : "border-transparent text-gray-600 hover:text-gray-900 disabled:text-gray-400"
-            }`}
-          >
-            {t === "menu" ? `Menu${hasMenu ? ` (${details.menu.length})` : ""}` : "Info"}
-          </button>
-        ))}
-      </div>
+      <TabBar
+        className="px-4"
+        label="Place"
+        value={activeTab}
+        onChange={onTabChange}
+        tabs={[
+          { value: "menu", label: "Menu", count: hasMenu ? details.menu.length : undefined, disabled: !hasMenu },
+          { value: "info", label: "Info" },
+        ]}
+      />
 
       {activeTab === "info" ? (
         <>

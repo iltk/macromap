@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import type { MapRef } from "react-map-gl/maplibre";
-import { fetchRestaurants } from "../api/venues";
 import { SiteHeader } from "../components/layout/SiteHeader";
 import { MapContainer } from "../components/map/MapContainer";
 import { HAS_MAP_KEY } from "../components/map/mapStyles";
@@ -11,7 +10,8 @@ import { PlaceDetails, type PlaceTab } from "../components/place/PlaceDetails";
 import { SearchBar } from "../components/search/SearchBar";
 import { Toast } from "../components/ui/Toast";
 import { Icon } from "../components/ui/icons";
-import { useApi } from "../hooks/useApi";
+import { useMapVenues } from "../hooks/useMapVenues";
+import { useRestaurantSummaries } from "../hooks/useRestaurantSummaries";
 import { useBottomSheet } from "../hooks/useBottomSheet";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationDetails } from "../hooks/useLocationDetails";
@@ -21,10 +21,10 @@ import { useVenueData } from "../hooks/useVenueData";
 import { addRecent, toPlaceRef, type PlaceRef } from "../stores/places";
 import { usePrefs } from "../stores/prefs";
 import type { Coordinates, MenuItemHit, RestaurantHit, Venue } from "../types/venues";
-import { applyMapFilters, type MapFilterState } from "../utils/filter";
+import { type MapFilterState } from "../utils/filter";
 import { TORONTO, distanceMeters, nearest } from "../utils/geo";
-import { limitsToQuery } from "../utils/goals";
-import { getOpenStatus } from "../utils/openingHours";
+
+
 
 const COVERAGE_RADIUS_M = 60_000;
 const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
@@ -64,29 +64,14 @@ export function MapPage() {
     document.title = "MacroMap";
   }, []);
 
-  // ----- data derived from filters and preferences -----
-  const isOpen = useCallback((v: Venue) => getOpenStatus(v.openingHours, now)?.open === true, [now]);
-  const visibleVenues = useMemo(() => applyMapFilters(venues, filters, isOpen), [venues, filters, isOpen]);
-  const hiddenUnknownHours = useMemo(
-    () => (filters.openNow ? applyMapFilters(venues, { ...filters, openNow: false }, () => true).filter((v) => !getOpenStatus(v.openingHours, now)).length : 0),
-    [venues, filters, now],
-  );
-
-  const goalQuery = limitsToQuery(prefs.limits);
-  const goalStats = useApi(prefs.goalActive ? `restaurants?${goalQuery}` : null, (signal) => fetchRestaurants(goalQuery, signal), {
-    keepPrevious: true,
-  });
-  const fitsBySlug = useMemo(
-    () => (prefs.goalActive && goalStats.data ? new Map(goalStats.data.map((r) => [r.slug, r.matchingItems] as const)) : null),
-    [prefs.goalActive, goalStats.data],
-  );
+  const { visible: visibleVenues, hiddenUnknownHours } = useMapVenues(venues, filters, now);
+  const { fitsBySlug } = useRestaurantSummaries();
 
   const selectedVenue: Venue | null = useMemo(() => {
     if (!selectedId) return null;
     return venues.find((v) => v.locationId === selectedId) ?? (details?.locationId === selectedId ? { ...details } : null);
   }, [selectedId, venues, details]);
 
-  // ----- camera -----
   const flyTo = useCallback((lat: number, lng: number, zoom = 15) => {
     const map = mapRef.current;
     if (!map) return;
@@ -145,7 +130,6 @@ export function MapPage() {
     );
   }, [mapReady, venues]);
 
-  // ----- URL: ?place= and ?chain= -----
   useEffect(() => {
     setSearchParams(
       (prev) => {
@@ -169,7 +153,6 @@ export function MapPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectLocation]);
 
-  // ----- search -----
   const origin = (): Coordinates =>
     userPosition && distanceMeters(userPosition, TORONTO) <= COVERAGE_RADIUS_M ? userPosition : center;
 

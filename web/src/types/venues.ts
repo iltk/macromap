@@ -1,6 +1,6 @@
 export type VenueCategory = "restaurant" | "cafe" | "bar";
 
-/** One map pin (a single restaurant location). Mirrors api RestaurantPin. */
+/** One map pin (a single restaurant location), from GET /api/restaurants/pins. */
 export interface Venue {
   locationId: string;
   restaurantId: number;
@@ -32,7 +32,7 @@ export interface MenuItem {
   allergens: string[] | null;
 }
 
-/** Mirrors api LocationDetails. */
+/** GET /api/locations/{id} */
 export interface LocationDetails {
   locationId: string;
   restaurantId: number;
@@ -80,13 +80,7 @@ export interface Coordinates {
   lng: number;
 }
 
-/** Pin filter chosen with the chips under the search bar. */
-export type VenueFilter =
-  | { kind: "all" }
-  | { kind: "category"; category: VenueCategory }
-  | { kind: "chain"; slug: string };
-
-/** Mirrors api RestaurantSummary (one directory card). */
+/** One entry of GET /api/restaurants */
 export interface RestaurantSummary {
   restaurantId: number;
   slug: string;
@@ -103,7 +97,7 @@ export interface RestaurantSummary {
   matchingItems: number;
 }
 
-/** Mirrors api RestaurantMenu. */
+/** GET /api/restaurants/{slug} */
 export interface RestaurantMenu {
   restaurantId: number;
   slug: string;
@@ -117,7 +111,7 @@ export interface RestaurantMenu {
   menu: MenuItem[];
 }
 
-/** Mirrors api SuggestionResponse. */
+/** GET /api/suggestions */
 export interface SuggestionRestaurant {
   restaurantId: number;
   slug: string;
@@ -136,14 +130,14 @@ export interface SuggestionLocation {
   openingHours: string | null;
 }
 
-export interface ItemSuggestion {
+interface ItemSuggestion {
   item: MenuItem;
   restaurant: SuggestionRestaurant;
   score: number;
   locations: SuggestionLocation[];
 }
 
-export interface ComboSuggestion {
+interface ComboSuggestion {
   items: MenuItem[];
   restaurant: SuggestionRestaurant;
   calories: number;

@@ -27,11 +27,7 @@ function barPath(x: number, y: number, w: number, h: number) {
   return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
 }
 
-/**
- * One measure per day as thin columns, with an optional target line.
- * Single series: the title names it (no legend). Hover/focus shows a tooltip;
- * the history table below the charts carries every value too.
- */
+/** One column per day with an optional target line. Every value is also in the history table. */
 export function DayBarChart({ title, points, value, unit, target, color, height = 180 }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(600);

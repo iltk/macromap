@@ -2,7 +2,7 @@ import { useState } from "react";
 import { foodKind } from "../../utils/foodKind";
 import { FoodGlyph } from "./FoodGlyph";
 
-// Soft, warm tints so a menu full of placeholders still has some rhythm (keyed by food kind).
+// placeholder background, picked per kind of food
 const TINTS = ["#efe6d6", "#e4eadf", "#ede2dd", "#e1e7eb", "#ebe6d2", "#e6e1ea"];
 
 function tintFor(key: string) {
@@ -12,11 +12,8 @@ function tintFor(key: string) {
 }
 
 /**
- * A menu item photo, shown whole ("contain") so cut-out product shots sit centred on white.
- * Falls back to a placeholder when there's no image yet or it fails to load:
- * - "card": a tinted plate in the middle of a white photo area
- * - "thumb": a small tinted square
- * The parent sets the size.
+ * Menu item photo, shown whole so cut-out product shots sit centred on white.
+ * Without a photo (or if it fails to load) it draws the kind of food instead.
  */
 export function FoodImage({
   src,
@@ -28,10 +25,9 @@ export function FoodImage({
 }: {
   src: string | null | undefined;
   alt: string;
-  /** e.g. the menu section, so items in one section share a tint */
   tintKey: string;
   variant: "card" | "thumb";
-  /** menu section, to help pick the placeholder drawing */
+  /** helps pick the placeholder drawing */
   section?: string | null;
   className?: string;
 }) {

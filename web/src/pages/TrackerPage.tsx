@@ -12,6 +12,7 @@ import { ui } from "../components/ui/styles";
 import { totalsOf, useTracker } from "../stores/tracker";
 import { openSheet } from "../stores/ui";
 import { dayKey, dayLabel, isDayKey, shiftDay } from "../utils/dates";
+import { Segmented } from "../components/ui/Segmented";
 
 export function TrackerPage() {
   const [params, setParams] = useSearchParams();
@@ -37,13 +38,16 @@ export function TrackerPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1">
             <h1 className="mr-3 text-2xl font-bold text-gray-900">Tracker</h1>
-            <div className="mr-3 inline-flex rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="View">
-              {([false, true] as const).map((h) => (
-                <button key={String(h)} type="button" role="radio" aria-checked={history === h} onClick={() => showHistory(h)} className={`rounded px-3 py-1 text-sm ${history === h ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}>
-                  {h ? "History" : "Day"}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              className="mr-3"
+              label="View"
+              value={history ? "history" : "day"}
+              onChange={(v) => showHistory(v === "history")}
+              options={[
+                { value: "day", label: "Day" },
+                { value: "history", label: "History" },
+              ]}
+            />
             {!history && (<span className="flex items-center gap-1">
             <button type="button" onClick={() => go(shiftDay(date, -1))} aria-label="Previous day" className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100">
               <Icon name="arrowBack" className="h-4 w-4" />

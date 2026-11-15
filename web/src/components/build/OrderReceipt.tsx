@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { notify } from "../../stores/notify";
 import { clearPlan, logPlan, saveOrder, setPlanQty, addToPlan, slotForTime, SLOT_LABELS, SLOTS, totalsOf, useToday, useTracker, type MealSlot } from "../../stores/tracker";
-import { toTrayItem } from "../../stores/tray";
+import { toItemRef } from "../../stores/compare";
 import type { MenuItem } from "../../types/venues";
 import { dayKey } from "../../utils/dates";
 import { MACRO_COLORS } from "../../utils/macros";
 import { lighterSwap } from "../../utils/swaps";
 import { FoodImage } from "../media/FoodImage";
-import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { undoable } from "../ui/undoable";
 import { EmptyState } from "../ui/EmptyState";
+import { QtyStepper } from "../ui/QtyStepper";
 
 const r = Math.round;
 
-/** The order being built, as a running receipt with live totals. */
 export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
   const { plan } = useTracker();
   const today = useToday();
@@ -58,27 +57,19 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
                     {item.restaurantName} · {r((item.calories ?? 0) * qty)} cal · {r((item.protein ?? 0) * qty)} g protein
                   </p>
                 </div>
-                <span className="flex shrink-0 items-center rounded-md border border-gray-300">
-                  <button
-                    type="button"
-                    onClick={() => (qty > 1 ? setPlanQty(item.id, qty - 1) : undoable(`Removed ${item.name}`, () => setPlanQty(item.id, 0)))}
-                    aria-label={`One less ${item.name}`}
-                    className="p-1 text-gray-600 hover:text-gray-900"
-                  >
-                    <Icon name="remove" className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="w-5 text-center text-sm tabular-nums">{qty}</span>
-                  <button type="button" onClick={() => setPlanQty(item.id, qty + 1)} aria-label={`One more ${item.name}`} className="p-1 text-gray-600 hover:text-gray-900">
-                    <Icon name="add" className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+                <QtyStepper
+                  value={qty}
+                  label={item.name}
+                  onDecrease={() => (qty > 1 ? setPlanQty(item.id, qty - 1) : undoable(`Removed ${item.name}`, () => setPlanQty(item.id, 0)))}
+                  onIncrease={() => setPlanQty(item.id, qty + 1)}
+                />
               </div>
               {swap && (
                 <button
                   type="button"
                   onClick={() => {
                     setPlanQty(item.id, 0);
-                    for (let i = 0; i < qty; i++) addToPlan(toTrayItem(swap.item, item.restaurantName, item.restaurantSlug));
+                    for (let i = 0; i < qty; i++) addToPlan(toItemRef(swap.item, item.restaurantName, item.restaurantSlug));
                   }}
                   className="mt-2 ml-13 block text-left text-xs text-accent-ink hover:underline"
                 >

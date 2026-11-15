@@ -2,7 +2,7 @@ import type { MenuItem } from "../types/venues";
 import { needsCheck } from "./macros";
 import { sectionOf } from "./menuQuery";
 
-export interface Swap {
+interface Swap {
   item: MenuItem;
   caloriesSaved: number;
   proteinChange: number;

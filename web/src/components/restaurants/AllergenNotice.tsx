@@ -1,4 +1,3 @@
-/** Explains how many items the allergen filter hid, and why. */
 export function AllergenNotice({ contains, unknown }: { contains: number; unknown: number }) {
   if (contains === 0 && unknown === 0) return null;
   return (

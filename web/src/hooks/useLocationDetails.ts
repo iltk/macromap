@@ -8,7 +8,6 @@ interface Result {
   error: string | null;
 }
 
-/** Fetches the details + menu for the selected location. */
 export function useLocationDetails(locationId: string | null) {
   const [result, setResult] = useState<Result | null>(null);
   const [retryToken, setRetryToken] = useState(0);

@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTracker } from "../../stores/tracker";
 import { dayKey } from "../../utils/dates";
-import { daySeries, downloadText, logToCsv, weeklyCheckIn } from "../../utils/history";
+import { downloadText } from "../../utils/download";
+import { daySeries, logToCsv, weeklyCheckIn } from "../../utils/history";
 import { DayBarChart } from "../charts/DayBarChart";
 import { ui } from "../ui/styles";
 import { EmptyState } from "../ui/EmptyState";
+import { Segmented } from "../ui/Segmented";
 
-/** Last 7 or 30 days: averages, calorie and protein charts, a day table and CSV export. */
 export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void }) {
   const { days, targets } = useTracker();
   const [range, setRange] = useState<7 | 30>(7);
@@ -19,13 +20,15 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-md border border-gray-300 bg-white p-0.5" role="radiogroup" aria-label="Range">
-          {([7, 30] as const).map((n) => (
-            <button key={n} type="button" role="radio" aria-checked={range === n} onClick={() => setRange(n)} className={`rounded px-3 py-1 text-sm ${range === n ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}>
-              Last {n} days
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label="Range"
+          value={String(range) as "7" | "30"}
+          onChange={(v) => setRange(v === "7" ? 7 : 30)}
+          options={[
+            { value: "7", label: "Last 7 days" },
+            { value: "30", label: "Last 30 days" },
+          ]}
+        />
         <button type="button" disabled={Object.keys(days).length === 0} onClick={() => downloadText(`macromap-log-${dayKey()}.csv`, logToCsv(days))} className={ui.btn}>
           Export CSV
         </button>

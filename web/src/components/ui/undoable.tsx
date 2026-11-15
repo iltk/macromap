@@ -1,10 +1,7 @@
 import { notify } from "../../stores/notify";
 import { restoreTracker, trackerSnapshot } from "../../stores/tracker";
 
-/**
- * Runs a tracker change and shows a notice with Undo, which puts the tracker back
- * exactly as it was. Use for anything that removes or moves data.
- */
+/** Runs a tracker change and offers Undo, which restores the tracker exactly as it was. */
 export function undoable(message: string, change: () => void) {
   const before = trackerSnapshot();
   change();
@@ -22,7 +19,7 @@ export function undoable(message: string, change: () => void) {
   ));
 }
 
-/** Same, for any change with its own restore function. */
+/** Same, for changes outside the tracker that bring their own restore. */
 export function undoableWith(message: string, change: () => void, restore: () => void) {
   change();
   notify(message, (close) => (

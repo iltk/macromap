@@ -5,7 +5,6 @@ import { Icon } from "../ui/icons";
 import { ui } from "../ui/styles";
 import { allergenLabel } from "../../utils/allergens";
 
-/** Search, section, sort and "fits my preferences": the same controls on the map panel and the menu page. */
 export function MenuToolbar({
   query,
   onChange,

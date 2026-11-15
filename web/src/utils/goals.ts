@@ -44,8 +44,6 @@ export const GOALS: Goal[] = [
   },
 ];
 
-export const goalById = (id: string | null): Goal => GOALS.find((g) => g.id === id) ?? GOALS[0];
-
 const sameLimits = (a: MacroLimits, b: MacroLimits) =>
   a.maxCalories === b.maxCalories && a.minProtein === b.minProtein && a.maxCarbs === b.maxCarbs;
 

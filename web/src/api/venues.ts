@@ -67,7 +67,7 @@ export function fetchRestaurantMenu(slug: string, signal?: AbortSignal): Promise
   );
 }
 
-export interface SuggestionParams {
+interface SuggestionParams {
   calories: number;
   protein?: number;
   carbs?: number;

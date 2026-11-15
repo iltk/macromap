@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { createPersistentStore } from "../utils/storage";
 
 export type ThemePref = "system" | "light" | "dark";
-export const THEME_KEY = "macromap.theme.v1";
+const THEME_KEY = "macromap.theme.v1";
 
 const pref = createPersistentStore<ThemePref>(THEME_KEY, "system");
 const media = typeof window !== "undefined" ? window.matchMedia("(prefers-color-scheme: dark)") : null;

@@ -1,6 +1,6 @@
 import type { LogEntry } from "../stores/tracker";
 import { totalsOf } from "../stores/tracker";
-import type { TrayItem } from "../stores/tray";
+import type { ItemRef } from "../stores/compare";
 import { parseDayKey, shiftDay } from "./dates";
 
 export interface DayPoint {
@@ -27,8 +27,8 @@ export function daySeries(days: Record<string, LogEntry[]>, endKey: string, n: n
 }
 
 /** Distinct items from the log, most recently logged first. */
-export function recentItems(days: Record<string, LogEntry[]>, limit = 12): TrayItem[] {
-  const seen = new Map<string, { item: TrayItem; at: string }>();
+export function recentItems(days: Record<string, LogEntry[]>, limit = 12): ItemRef[] {
+  const seen = new Map<string, { item: ItemRef; at: string }>();
   for (const entries of Object.values(days)) {
     for (const e of entries) {
       const prev = seen.get(e.item.id);
@@ -43,7 +43,6 @@ const csvCell = (v: string | number | null) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-/** Every log entry as CSV (one row per entry, quantities applied to the macros). */
 export function logToCsv(days: Record<string, LogEntry[]>): string {
   const header = ["date", "time", "meal", "item", "restaurant", "quantity", "calories", "protein_g", "carbs_g", "fat_g"];
   const rows = Object.keys(days)
@@ -67,19 +66,7 @@ export function logToCsv(days: Record<string, LogEntry[]>): string {
   return [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n") + "\n";
 }
 
-/** Triggers a browser download of `text` as a file. */
-export function downloadText(filename: string, text: string, type = "text/csv") {
-  const url = URL.createObjectURL(new Blob([text], { type: `${type};charset=utf-8` }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export interface CheckIn {
+interface CheckIn {
   headline: string;
   details: string[];
 }
@@ -87,12 +74,9 @@ export interface CheckIn {
 const avgOf = (pts: DayPoint[], f: (p: DayPoint) => number) =>
   pts.length ? pts.reduce((s, p) => s + f(p), 0) / pts.length : null;
 
-/**
- * One plain, encouraging summary of the last 7 complete days against the 7 before.
- * Compares averages over logged days only (an unlogged day isn't a zero-calorie day).
- */
+/** Last 7 full days against the 7 before, averaging logged days only (a skipped day isn't 0 cal). */
 export function weeklyCheckIn(days: Record<string, LogEntry[]>, today: string, targets: { calories: number; protein: number } | null): CheckIn | null {
-  // today is still in progress, so compare the 7 complete days ending yesterday with the 7 before
+  // today is still in progress, so the week ends yesterday
   const pts = daySeries(days, shiftDay(today, -1), 14);
   const prev = pts.slice(0, 7).filter((p) => p.logged);
   const curr = pts.slice(7).filter((p) => p.logged);

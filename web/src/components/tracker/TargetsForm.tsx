@@ -6,7 +6,6 @@ import { ui } from "../ui/styles";
 const DEFAULT_TARGET: DailyTarget = { calories: 2000, protein: 120, carbs: 225, fat: 65 };
 const DEFAULT_PROFILE: BodyProfile = { sex: "female", age: 30, heightCm: 168, weightKg: 68, activity: "light", goal: "maintain" };
 
-/** Daily targets: type them in, or estimate them from body stats (optional). */
 export function TargetsForm({ onDone }: { onDone?: () => void }) {
   const { targets, profile } = useTracker();
   const [draft, setDraft] = useState<DailyTarget>(targets ?? DEFAULT_TARGET);

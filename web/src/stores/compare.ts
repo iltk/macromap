@@ -3,8 +3,8 @@ import type { MenuItem } from "../types/venues";
 import { createPersistentStore } from "../utils/storage";
 import { openSheet } from "./ui";
 
-/** A menu item snapshot, so the tray works across pages without refetching. */
-export interface TrayItem {
+/** A menu item as logged or compared: a snapshot, so it still shows if the menu changes. */
+export interface ItemRef {
   id: string;
   name: string;
   restaurantName: string;
@@ -17,14 +17,13 @@ export interface TrayItem {
   fat: number | null;
 }
 
-interface TrayState {
-  compare: TrayItem[];
+interface CompareState {
+  compare: ItemRef[];
 }
 
-// v3: the meal and daily target moved to the tracker store (stores/tracker.ts migrates v2 once)
-const store = createPersistentStore<TrayState>("macromap.compare.v1", { compare: [] });
+const store = createPersistentStore<CompareState>("macromap.compare.v1", { compare: [] });
 
-export const toTrayItem = (m: MenuItem, restaurantName: string, restaurantSlug: string): TrayItem => ({
+export const toItemRef = (m: MenuItem, restaurantName: string, restaurantSlug: string): ItemRef => ({
   id: m.id,
   name: m.name,
   restaurantName,
@@ -37,8 +36,8 @@ export const toTrayItem = (m: MenuItem, restaurantName: string, restaurantSlug: 
   fat: m.fat,
 });
 
-/** Toggle an item in the comparison (max 2; a third replaces the oldest). */
-export function toggleCompare(item: TrayItem) {
+/** Two items at most; a third replaces the oldest. */
+export function toggleCompare(item: ItemRef) {
   store.set((s) => {
     if (s.compare.some((c) => c.id === item.id)) {
       return { ...s, compare: s.compare.filter((c) => c.id !== item.id) };
@@ -51,9 +50,8 @@ export function toggleCompare(item: TrayItem) {
 
 export const clearCompare = () => store.set((s) => ({ ...s, compare: [] }));
 
-export const useTray = () => useSyncExternalStore(store.subscribe, store.get, store.get);
+export const useCompare = () => useSyncExternalStore(store.subscribe, store.get, store.get);
 
 
-/** For undo: the current comparison, and a way to put it back. */
 export const compareSnapshot = () => store.get().compare;
-export const restoreCompare = (compare: TrayItem[]) => store.set((s) => ({ ...s, compare }));
+export const restoreCompare = (compare: ItemRef[]) => store.set((s) => ({ ...s, compare }));

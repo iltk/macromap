@@ -1,6 +1,5 @@
 import type { MenuItem } from "../../types/venues";
 
-/** One plain sentence pointing at the best item for the viewer's preferences. */
 export function TopPick({ item, onShow, forGoal }: { item: MenuItem; onShow?: () => void; forGoal: string | null }) {
   return (
     <p className="text-sm text-gray-700">

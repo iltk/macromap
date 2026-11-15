@@ -35,7 +35,7 @@ function toMinutes(t: string): number | null {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
-export function parseOpeningHours(raw: string | null | undefined): Week | null {
+function parseOpeningHours(raw: string | null | undefined): Week | null {
   if (!raw) return null;
   const text = raw.trim();
   const week: Week = DAYS.map(() => []);
@@ -73,7 +73,7 @@ export function parseOpeningHours(raw: string | null | undefined): Week | null {
   return week;
 }
 
-export interface OpenStatus {
+interface OpenStatus {
   open: boolean;
   label: string; // e.g. "Open · Closes 22:00"
 }

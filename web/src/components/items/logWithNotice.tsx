@@ -1,10 +1,9 @@
 import { Link } from "react-router";
 import { notify } from "../../stores/notify";
 import { logItem, moveEntry, removeEntry, SLOT_LABELS, SLOTS, type MealSlot } from "../../stores/tracker";
-import type { TrayItem } from "../../stores/tray";
+import type { ItemRef } from "../../stores/compare";
 
-/** Logs an item to today and offers to change the meal or undo. */
-export function logWithNotice(item: TrayItem) {
+export function logWithNotice(item: ItemRef) {
   const entry = logItem(item);
   notify(`Logged ${item.name}`, (close) => (
     <span className="flex shrink-0 items-center gap-2">

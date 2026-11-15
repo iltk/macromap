@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router";
 import { fetchRestaurants, fetchSuggestions, suggestionQuery } from "../../api/venues";
 import { useApi } from "../../hooks/useApi";
 import { useGeolocation } from "../../hooks/useGeolocation";
@@ -7,28 +6,18 @@ import { useNow } from "../../hooks/useNow";
 import { notify } from "../../stores/notify";
 import { usePrefs } from "../../stores/prefs";
 import { logItem, slotForTime, SLOT_LABELS, SLOTS, type MealSlot, type Totals } from "../../stores/tracker";
-import { toTrayItem } from "../../stores/tray";
-import type { MenuItem, SuggestionLocation, SuggestionRestaurant } from "../../types/venues";
-import { formatDistance } from "../../utils/geo";
+import { toItemRef } from "../../stores/compare";
+import type { SuggestionLocation } from "../../types/venues";
 import { getOpenStatus } from "../../utils/openingHours";
 import type { DailyTarget } from "../../utils/targets";
-import { FoodImage } from "../media/FoodImage";
-import { logWithNotice } from "../tray/logWithNotice";
+import { logWithNotice } from "../items/logWithNotice";
 import { ui } from "../ui/styles";
+import { SuggestionRow, type SuggestionRowData as Row } from "./SuggestionRow";
 import { EmptyState } from "../ui/EmptyState";
+import { Segmented } from "../ui/Segmented";
 
 type Tab = "items" | "combos" | "protein";
 
-interface Row {
-  key: string;
-  items: MenuItem[];
-  restaurant: SuggestionRestaurant;
-  calories: number;
-  protein: number;
-  location: SuggestionLocation | null;
-}
-
-/** "What to eat next": items and combos that fit what's left today. */
 export function Suggestions({ totals, targets }: { totals: Totals; targets: DailyTarget }) {
   const prefs = usePrefs();
   const now = useNow();
@@ -105,8 +94,8 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
   };
 
   const logRow = (r: Row) => {
-    if (r.items.length === 1) return logWithNotice(toTrayItem(r.items[0], r.restaurant.name, r.restaurant.slug));
-    r.items.forEach((m) => logItem(toTrayItem(m, r.restaurant.name, r.restaurant.slug)));
+    if (r.items.length === 1) return logWithNotice(toItemRef(r.items[0], r.restaurant.name, r.restaurant.slug));
+    r.items.forEach((m) => logItem(toItemRef(m, r.restaurant.name, r.restaurant.slug)));
     notify(`Logged ${r.items.map((m) => m.name).join(" + ")}`);
   };
 
@@ -134,20 +123,17 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
             {prefs.avoid.length > 0 && ", avoiding your allergens"}
           </p>
         </div>
-        <div className="inline-flex rounded-md border border-gray-300 p-0.5" role="radiogroup" aria-label="Suggestion type">
-          {(["items", "combos", "protein"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="radio"
-              aria-checked={tab === t}
-              onClick={() => setTab(t)}
-              className={`rounded px-2.5 py-1 text-xs ${tab === t ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}
-            >
-              {t === "items" ? "Single items" : t === "combos" ? "Combos" : "Fill protein"}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          size="sm"
+          label="Suggestion type"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "items", label: "Single items" },
+            { value: "combos", label: "Combos" },
+            { value: "protein", label: "Fill protein" },
+          ]}
+        />
       </header>
 
       {tab === "protein" && left.protein <= 0 ? (
@@ -215,45 +201,9 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
             />
           ) : (
             <ul className={`divide-y divide-gray-100 ${isLoading ? "opacity-60" : ""}`}>
-              {rows.map((r) => {
-                const status = r.location ? getOpenStatus(r.location.openingHours, now) : null;
-                const href = r.location ? `/?place=${r.location.locationId}` : `/restaurants/${r.restaurant.slug}?item=${r.items[0].id}`;
-                return (
-                  <li key={r.key} className="flex gap-3 px-4 py-3">
-                    <div className="flex shrink-0 -space-x-3">
-                      {r.items.map((m) => (
-                        <FoodImage section={m.menuCategory} key={m.id} src={m.imageUrl} alt={m.name} tintKey={m.menuCategory ?? ""} variant="thumb" className="h-12 w-12 rounded-md border-2 border-white" />
-                      ))}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900">{r.items.map((m) => m.name).join(" + ")}</p>
-                      <p className="text-xs text-gray-500">
-                        {r.restaurant.name}
-                        {r.location && ` · ${formatDistance(r.location.distanceMeters)}`}
-                        {status && (
-                          <>
-                            {" · "}
-                            <span className={status.open ? "text-success-ink" : "text-danger-ink"}>{status.label}</span>
-                          </>
-                        )}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-700 tabular-nums">
-                        <span className="font-medium">{Math.round(r.calories)} cal</span> ·{" "}
-                        <span className="text-accent-ink">{Math.round(r.protein)} g protein</span>
-                        <span className="text-gray-500"> · {reason(r)}</span>
-                      </p>
-                      <div className="mt-2 flex items-center gap-3">
-                        <button type="button" onClick={() => logRow(r)} className={ui.btnAccentSmall}>
-                          Log it
-                        </button>
-                        <Link to={href} className={`text-xs ${ui.link}`}>
-                          {r.location ? "Show on map" : "View menu"}
-                        </Link>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+              {rows.map((r) => (
+                <SuggestionRow key={r.key} row={r} now={now} reason={reason(r)} onLog={() => logRow(r)} />
+              ))}
             </ul>
           )}
         </>
