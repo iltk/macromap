@@ -84,7 +84,7 @@ export function QuickAdd({ date }: { date: string }) {
                       <Icon name="close" className="h-3.5 w-3.5" />
                     </button>
                   )}
-                  <button type="button" onClick={() => log(item)} className={`${ui.btnSmall} h-7`}>
+                  <button type="button" onClick={() => log(item)} className={ui.btnAccentSmall}>
                     Log
                   </button>
                 </li>

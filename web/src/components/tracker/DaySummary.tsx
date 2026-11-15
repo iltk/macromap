@@ -11,7 +11,7 @@ export function DaySummary({ totals, targets, isToday }: { totals: Totals; targe
     return (
       <section className="rounded-xl border border-gray-200 bg-white p-5">
         <p className="text-sm text-gray-600">{isToday ? "Eaten today" : "Eaten that day"}</p>
-        <p className="mt-1 text-3xl font-bold text-gray-900 tabular-nums">{r(totals.calories)} cal</p>
+        <p className={`mt-1 ${ui.hero}`}>{r(totals.calories).toLocaleString()} cal</p>
         <p className="mt-1 text-sm text-gray-600 tabular-nums">
           <span className="text-accent-ink">{r(totals.protein)} g protein</span> · {r(totals.carbs)} g carbs · {r(totals.fat)} g fat
         </p>
@@ -31,7 +31,7 @@ export function DaySummary({ totals, targets, isToday }: { totals: Totals; targe
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="text-sm text-gray-600">{left >= 0 ? "Calories left" : "Over by"}</p>
-          <p className={`mt-1 text-3xl font-bold tabular-nums ${left < 0 ? "text-danger-ink" : "text-gray-900"}`}>{Math.abs(r(left))}</p>
+          <p className={`mt-1 ${ui.hero} ${left < 0 ? "text-danger-ink" : ""}`}>{Math.abs(r(left)).toLocaleString()}</p>
         </div>
         <p className="text-sm text-gray-500 tabular-nums">
           {r(totals.calories)} eaten of {targets.calories}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTracker } from "../../stores/tracker";
 import { dayKey } from "../../utils/dates";
-import { daySeries, downloadText, logToCsv } from "../../utils/history";
+import { daySeries, downloadText, logToCsv, weeklyCheckIn } from "../../utils/history";
 import { DayBarChart } from "../charts/DayBarChart";
 import { ui } from "../ui/styles";
 import { EmptyState } from "../ui/EmptyState";
@@ -13,6 +13,7 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
   const points = useMemo(() => daySeries(days, dayKey(), range), [days, range]);
   const logged = points.filter((p) => p.logged);
   const avg = (f: (p: (typeof points)[number]) => number) => (logged.length ? logged.reduce((s, p) => s + f(p), 0) / logged.length : 0);
+  const checkIn = useMemo(() => weeklyCheckIn(days, dayKey(), targets), [days, targets]);
   const onTarget = targets ? logged.filter((p) => Math.abs(p.calories - targets.calories) <= targets.calories * 0.1).length : null;
 
   return (
@@ -30,6 +31,14 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
         </button>
       </div>
 
+      {checkIn && (
+        <section className="rounded-xl border border-accent/30 bg-accent-soft px-5 py-4">
+          <p className="text-xs font-medium text-accent-ink">Your week (last 7 full days)</p>
+          <p className="mt-1 text-lg font-semibold text-gray-900">{checkIn.headline}</p>
+          {checkIn.details.length > 0 && <p className="mt-1 text-sm text-gray-700">{checkIn.details.join(" ")}</p>}
+        </section>
+      )}
+
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["Avg calories", logged.length ? Math.round(avg((p) => p.calories)).toLocaleString() : "–"],
@@ -39,7 +48,7 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
         ].map(([label, v]) => (
           <div key={label} className="rounded-xl border border-gray-200 bg-white p-4">
             <p className="text-xs text-gray-500">{label}</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">{v}</p>
+            <p className="mt-1 text-2xl font-bold tracking-tight text-gray-900">{v}</p>
           </div>
         ))}
       </section>

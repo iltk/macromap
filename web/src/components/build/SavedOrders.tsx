@@ -43,11 +43,11 @@ export function SavedOrders({ compact = false, emptyText }: { compact?: boolean;
                 <Icon name="close" className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="mt-2 flex gap-2">
-              <button type="button" onClick={() => log(o)} className={`${ui.btnSmall} h-7`}>
+            <div className="mt-2 flex items-center gap-3">
+              <button type="button" onClick={() => log(o)} className={ui.btnAccentSmall}>
                 Log it
               </button>
-              <button type="button" onClick={() => edit(o)} className={`${ui.btnSmall} h-7`}>
+              <button type="button" onClick={() => edit(o)} className={`text-xs ${ui.link}`}>
                 Edit in builder
               </button>
             </div>

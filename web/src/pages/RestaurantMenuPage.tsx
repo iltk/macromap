@@ -89,7 +89,7 @@ function MenuView({ restaurant }: { restaurant: RestaurantMenu }) {
             </Link>
           )}
           {restaurant.website && (
-            <a href={restaurant.website} target="_blank" rel="noreferrer" className={ui.btn}>
+            <a href={restaurant.website} target="_blank" rel="noreferrer" className={`self-center px-1 text-sm ${ui.link}`}>
               Website
             </a>
           )}

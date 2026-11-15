@@ -94,8 +94,8 @@ export function OrderReceipt({ menus }: { menus: Map<string, MenuItem[]> }) {
       <div className="border-t-2 border-gray-900 px-5 pt-4 pb-5">
         <div className="flex items-baseline justify-between">
           <span className="text-sm text-gray-600">{t.count} {t.count === 1 ? "item" : "items"}</span>
-          <span className="text-3xl font-bold text-gray-900 tabular-nums">
-            {r(t.calories)} <span className="text-base font-medium text-gray-500">cal</span>
+          <span className={ui.hero}>
+            {r(t.calories).toLocaleString()} <span className="text-base font-medium text-gray-500">cal</span>
           </span>
         </div>
 

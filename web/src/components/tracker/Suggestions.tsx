@@ -17,7 +17,7 @@ import { logWithNotice } from "../tray/logWithNotice";
 import { ui } from "../ui/styles";
 import { EmptyState } from "../ui/EmptyState";
 
-type Tab = "items" | "combos";
+type Tab = "items" | "combos" | "protein";
 
 interface Row {
   key: string;
@@ -61,7 +61,8 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
         lng: useLocation ? coords!.lng : undefined,
         restaurant: restaurant || undefined,
         limit: 12,
-        meal,
+        meal: tab === "protein" ? undefined : meal,
+        mode: tab === "protein" ? "protein" : undefined,
       });
   const { data, error, isLoading, retry } = useApi(query, (signal) => fetchSuggestions(query!, signal), { keepPrevious: true });
 
@@ -70,7 +71,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
     const pickLocation = (locs: SuggestionLocation[]) =>
       openNow ? (locs.find((l) => getOpenStatus(l.openingHours, now)?.open) ?? null) : (locs[0] ?? null);
     const all: Row[] =
-      tab === "items"
+      tab !== "combos"
         ? data.items.map((s) => ({
             key: s.item.id,
             items: [s.item],
@@ -92,6 +93,11 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
 
   const reason = (r: Row) => {
     const after = left.calories - r.calories;
+    if (tab === "protein") {
+      return r.protein >= left.protein * 0.9
+        ? `gets you to your protein target, leaves ${Math.round(after)} cal`
+        : `+${Math.round(r.protein)} g protein for ${Math.round(r.calories)} cal`;
+    }
     const parts = [];
     if (left.protein > 0) parts.push(`covers ${Math.round(Math.min(r.protein, left.protein))} of your ${Math.round(left.protein)} g protein left`);
     parts.push(after >= 0 ? `leaves ${Math.round(after)} cal` : `goes ${Math.round(-after)} cal over`);
@@ -129,7 +135,7 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
           </p>
         </div>
         <div className="inline-flex rounded-md border border-gray-300 p-0.5" role="radiogroup" aria-label="Suggestion type">
-          {(["items", "combos"] as const).map((t) => (
+          {(["items", "combos", "protein"] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -138,13 +144,15 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
               onClick={() => setTab(t)}
               className={`rounded px-2.5 py-1 text-xs ${tab === t ? "bg-gray-900 font-medium text-white" : "text-gray-700 hover:bg-gray-100"}`}
             >
-              {t === "items" ? "Single items" : "Combos"}
+              {t === "items" ? "Single items" : t === "combos" ? "Combos" : "Fill protein"}
             </button>
           ))}
         </div>
       </header>
 
-      {done ? (
+      {tab === "protein" && left.protein <= 0 ? (
+        <EmptyState size="sm" art="chicken" title="Protein target reached" text="You've hit today's protein. Switch back to single items for anything else." />
+      ) : done ? (
         <EmptyState size="sm" art="plate" title="You've reached today's target" text="Nice work. Suggestions come back tomorrow, or raise your targets if you need more." />
       ) : (
         <>
@@ -234,11 +242,11 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
                         <span className="text-accent-ink">{Math.round(r.protein)} g protein</span>
                         <span className="text-gray-500"> · {reason(r)}</span>
                       </p>
-                      <div className="mt-2 flex gap-2">
-                        <button type="button" onClick={() => logRow(r)} className={`${ui.btnSmall} h-7`}>
+                      <div className="mt-2 flex items-center gap-3">
+                        <button type="button" onClick={() => logRow(r)} className={ui.btnAccentSmall}>
                           Log it
                         </button>
-                        <Link to={href} className={`${ui.btnSmall} h-7`}>
+                        <Link to={href} className={`text-xs ${ui.link}`}>
                           {r.location ? "Show on map" : "View menu"}
                         </Link>
                       </div>

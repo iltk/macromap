@@ -27,13 +27,13 @@ export const GOALS: Goal[] = [
   {
     id: "light",
     label: "Light meal",
-    rule: "Under 500 kcal",
+    rule: "Under 500 cal",
     limits: { maxCalories: 500, minProtein: null, maxCarbs: null },
   },
   {
     id: "lean",
     label: "Lean & filling",
-    rule: "≤ 600 kcal, 25 g+ protein",
+    rule: "≤ 600 cal, 25 g+ protein",
     limits: { maxCalories: 600, minProtein: 25, maxCarbs: null },
   },
   {

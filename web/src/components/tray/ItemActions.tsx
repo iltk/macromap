@@ -19,7 +19,7 @@ export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOn
         onClick={() => logWithNotice(item)}
         title={loggedToday ? `Logged today (×${loggedToday}). Log another` : "Log to today"}
         aria-label={`Log ${item.name} to today`}
-        className={`${base} ${loggedToday ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+        className={`${base} ${loggedToday ? "bg-accent-soft text-accent-ink" : "font-semibold text-accent-ink hover:bg-accent-soft"}`}
       >
         <Icon name={loggedToday ? "check" : "add"} className="h-3.5 w-3.5" />
         <span className={iconOnly ? "sr-only" : ""}>{loggedToday ? `Logged${loggedToday > 1 ? ` ×${loggedToday}` : ""}` : "Add"}</span>
@@ -31,7 +31,7 @@ export function ItemActions({ item, iconOnly = false }: { item: TrayItem; iconOn
         aria-pressed={comparing}
         title={comparing ? "Remove from comparison" : "Compare with another item"}
         aria-label={`${comparing ? "Stop comparing" : "Compare"} ${item.name}`}
-        className={`${base} ${comparing ? "bg-accent-soft text-accent-ink" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+        className={`${base} ${comparing ? "bg-accent-soft text-accent-ink" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"}`}
       >
         <Icon name="compare" className="h-3.5 w-3.5" />
         <span className={iconOnly ? "sr-only" : ""}>Compare</span>
