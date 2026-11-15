@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { setThemePref, useThemePref, type ThemePref } from "../../stores/theme";
-import { promptInstall, useInstall } from "../../stores/install";
 import { setLimits, usePrefs } from "../../stores/prefs";
 import { clearAvoid, toggleAvoid } from "../../stores/allergens";
 import { clearCompare, compareSnapshot, restoreCompare, toggleCompare, useTray, type TrayItem } from "../../stores/tray";
@@ -162,8 +161,6 @@ function PrefsSheet() {
         )}
       </Section>
 
-      <InstallSection />
-
       <Section title="Appearance">
         <div className="inline-flex rounded-md border border-gray-300 p-0.5" role="radiogroup" aria-label="Theme">
           {(["system", "light", "dark"] as ThemePref[]).map((t) => (
@@ -183,29 +180,6 @@ function PrefsSheet() {
         </div>
       </Section>
     </div>
-  );
-}
-
-/* ---------- install ---------- */
-
-function InstallSection() {
-  const { canPrompt, installed, ios } = useInstall();
-  return (
-    <Section title="Install MacroMap" hint="Open it from your home screen like an app. Your tracker works offline.">
-      {installed ? (
-        <p className="text-sm text-success-ink">Installed on this device.</p>
-      ) : canPrompt ? (
-        <button type="button" onClick={promptInstall} className={ui.btn}>
-          Install app
-        </button>
-      ) : ios ? (
-        <p className="text-sm text-gray-700">
-          In Safari, tap <span className="font-medium">Share</span>, then <span className="font-medium">Add to Home Screen</span>.
-        </p>
-      ) : (
-        <p className="text-sm text-gray-600">Use your browser's menu and choose “Install app” or “Add to Home Screen”.</p>
-      )}
-    </Section>
   );
 }
 
