@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 /** Optional macro limits; null means "no limit". */
 public record MacroGoal(Integer maxCalories, BigDecimal minProtein, BigDecimal maxCarbs) {
 
+    public static final MacroGoal NONE = new MacroGoal(null, null, null);
+
     private static final int NO_CALORIE_LIMIT = Integer.MAX_VALUE;
     private static final BigDecimal NO_CARB_LIMIT = new BigDecimal("1000000");
 

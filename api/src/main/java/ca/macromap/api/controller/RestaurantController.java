@@ -6,6 +6,7 @@ import ca.macromap.api.dto.RestaurantMenu;
 import ca.macromap.api.dto.RestaurantPin;
 import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse;
+import ca.macromap.api.search.SearchService;
 import ca.macromap.api.service.RestaurantService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +23,11 @@ import java.util.UUID;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final SearchService searchService;
 
-    public RestaurantController(RestaurantService restaurantService) {
+    public RestaurantController(RestaurantService restaurantService, SearchService searchService) {
         this.restaurantService = restaurantService;
+        this.searchService = searchService;
     }
 
     @GetMapping("/restaurants/pins")
@@ -53,6 +56,6 @@ public class RestaurantController {
 
     @GetMapping("/search")
     public SearchResponse search(@RequestParam(name = "q", defaultValue = "") String q) {
-        return restaurantService.search(q);
+        return searchService.search(q);
     }
 }

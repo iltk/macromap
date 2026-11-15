@@ -1,11 +1,10 @@
-package ca.macromap.api.service;
+package ca.macromap.api.search;
 
 import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse;
 import ca.macromap.api.entity.MenuItem;
 import ca.macromap.api.entity.Restaurant;
 import ca.macromap.api.repository.MenuItemRepository;
-import ca.macromap.api.repository.RestaurantLocRepository;
 import ca.macromap.api.repository.RestaurantRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +20,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-class RestaurantServiceTest {
+class SearchServiceTest {
 
-    private final RestaurantLocRepository locations = mock(RestaurantLocRepository.class);
     private final RestaurantRepository restaurants = mock(RestaurantRepository.class);
     private final MenuItemRepository items = mock(MenuItemRepository.class);
-    private final RestaurantService service = new RestaurantService(locations, restaurants, items);
+    private final SearchService service = new SearchService(restaurants, items);
 
     private static MenuItem item(Restaurant r, String name, String section, int cal, double protein, double carbs) {
         MenuItem m = new MenuItem();

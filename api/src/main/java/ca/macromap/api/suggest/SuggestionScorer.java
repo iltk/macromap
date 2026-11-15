@@ -1,6 +1,7 @@
 package ca.macromap.api.suggest;
 
 import ca.macromap.api.entity.MenuItem;
+import ca.macromap.api.nutrition.Allergens;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,21 +29,10 @@ public final class SuggestionScorer {
     static final double CALORIE_TOLERANCE = 1.05;
 
     public static boolean eligible(MenuItem m, Set<String> avoid) {
-        if (m.getCalories() == null || m.getCalories() <= 0) return false;
-        if (m.getSource() != null && m.getSource().toLowerCase(Locale.ROOT).contains("needs check")) return false;
-        return allergenSafe(m, avoid);
+        if (m.getCalories() == null || m.getCalories() <= 0 || m.hasUnverifiedNumbers()) return false;
+        return Allergens.safeFor(m.getAllergens(), avoid);
     }
 
-    static boolean allergenSafe(MenuItem m, Set<String> avoid) {
-        if (avoid.isEmpty()) return true;
-        String raw = m.getAllergens();
-        if (raw == null || raw.isBlank()) return false; // unknown is never "safe"
-        if (raw.strip().equalsIgnoreCase("none")) return true;
-        for (String a : raw.toLowerCase(Locale.ROOT).split(";")) {
-            if (avoid.contains(a.strip())) return false;
-        }
-        return true;
-    }
 
     public static boolean fitsCalories(double calories, Remaining r) {
         return r.calories() == null || calories <= r.calories() * CALORIE_TOLERANCE;

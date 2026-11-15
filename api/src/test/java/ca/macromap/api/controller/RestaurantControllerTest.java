@@ -8,6 +8,7 @@ import ca.macromap.api.dto.RestaurantPin;
 import ca.macromap.api.dto.RestaurantSummary;
 import ca.macromap.api.dto.SearchResponse;
 import ca.macromap.api.exception.NotFoundException;
+import ca.macromap.api.search.SearchService;
 import ca.macromap.api.service.RestaurantService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ class RestaurantControllerTest {
 
     @MockitoBean
     RestaurantService service;
+
+    @MockitoBean
+    SearchService searchService;
 
     private static final UUID LOC_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
@@ -134,7 +138,7 @@ class RestaurantControllerTest {
 
     @Test
     void searchPassesQueryThrough() throws Exception {
-        when(service.search("teen")).thenReturn(new SearchResponse(
+        when(searchService.search("teen")).thenReturn(new SearchResponse(
                 List.of(),
                 List.of(new SearchResponse.MenuItemHit(UUID.randomUUID(), 1L, "aw", "A&W", "Teen Burger", 500, new BigDecimal("27"), null))));
 

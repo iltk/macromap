@@ -65,6 +65,11 @@ public class MenuItem {
     @Column(name = "description")
     private String description;
 
+    /** The source flagged these numbers as not adding up (e.g. macros vs stated calories). */
+    public boolean hasUnverifiedNumbers() {
+        return source != null && source.toLowerCase(java.util.Locale.ROOT).contains("needs check");
+    }
+
 
 
 
