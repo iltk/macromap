@@ -70,11 +70,11 @@ export function HistoryView({ onOpenDay }: { onOpenDay: (key: string) => void })
           />
         </section>
       ) : (
-      <section className="space-y-6 rounded-xl border border-gray-200 bg-white p-4">
-        <DayBarChart title="Calories" points={points} value={(p) => p.calories} unit="cal" target={targets?.calories ?? null} color="var(--color-gray-700)" />
-        <DayBarChart title="Protein (g)" points={points} value={(p) => p.protein} unit="g protein" target={targets?.protein ?? null} color="var(--color-protein)" />
-        {targets && <p className="text-xs text-gray-500">“Near calorie target” counts logged days within 10% of {targets.calories} cal.</p>}
-      </section>
+        <section className="space-y-6 rounded-xl border border-gray-200 bg-white p-4">
+          <DayBarChart title="Calories" points={points} value={(p) => p.calories} unit="cal" target={targets?.calories ?? null} color="var(--color-gray-700)" />
+          <DayBarChart title="Protein (g)" points={points} value={(p) => p.protein} unit="g protein" target={targets?.protein ?? null} color="var(--color-protein)" />
+          {targets && <p className="text-xs text-gray-500">“Near calorie target” counts logged days within 10% of {targets.calories} cal.</p>}
+        </section>
       )}
 
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">

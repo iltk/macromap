@@ -35,7 +35,8 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
     carbs: targets.carbs - totals.carbs,
     fat: targets.fat - totals.fat,
   };
-  const useLocation = nearMe && coords !== null;
+  const here = nearMe ? coords : null;
+  const useLocation = here !== null;
   const done = left.calories < 50;
 
   const query = done
@@ -46,8 +47,8 @@ export function Suggestions({ totals, targets }: { totals: Totals; targets: Dail
         carbs: left.carbs,
         fat: left.fat,
         avoid: prefs.avoid,
-        lat: useLocation ? coords!.lat : undefined,
-        lng: useLocation ? coords!.lng : undefined,
+        lat: here?.lat,
+        lng: here?.lng,
         restaurant: restaurant || undefined,
         limit: 12,
         meal: tab === "protein" ? undefined : meal,
